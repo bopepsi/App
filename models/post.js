@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const { Schema } = require('mongoose');
 
-// Blue print for place daocument data
+// Blue print for post document data
 const postSchema = new Schema({
     title: { type: String, required: true },
     description: { type: String, required: true },
