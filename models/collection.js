@@ -8,4 +8,4 @@ const collectionSchema = new Schema({
     creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
 });
 
-module.exports = mongoose.model('Post', collectionSchema);
+module.exports = mongoose.model('Collection', collectionSchema);
