@@ -15,7 +15,7 @@ const userSchema = new Schema({
         lng: { type: Number, required: true }
     },
     //? One user may have many places
-    posts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Place" }],
+    posts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Post" }],
     collections: [{ type: mongoose.Types.ObjectId, required: true, ref: "Collection" }]
 });
 
