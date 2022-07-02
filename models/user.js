@@ -18,7 +18,8 @@ const userSchema = new Schema({
     //? One user may have many places, collections
     posts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Post" }],
     collections: [{ type: mongoose.Types.ObjectId, required: true, ref: "Collection" }],
-    follows: [{ type: mongoose.Types.ObjectId, required: true, ref: "User" }]
+    follows: [{ type: mongoose.Types.ObjectId, required: true, ref: "User" }],
+    followers: [{ type: mongoose.Types.ObjectId, required: true, ref: "User" }]
 });
 
 //? WIth unique, we can query form db as fast as possible.

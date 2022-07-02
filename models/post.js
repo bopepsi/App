@@ -7,6 +7,7 @@ const postSchema = new Schema({
     description: { type: String, required: true },
     image: { type: String, required: true },
     likes: { type: Number, required: true },
+    dislikes: { type: Number, required: true },
     collections: { type: Number, required: true },
     location: {
         lat: { type: Number, required: true },

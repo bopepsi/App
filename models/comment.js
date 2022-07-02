@@ -5,6 +5,7 @@ const { Schema } = require('mongoose');
 const commentSchema = new Schema({
     text: { type: String, required: true },
     date: { type: Date, default: Date.now },
+    likes: { type: Number, required: true },
     creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
     replies: [{ type: mongoose.Types.ObjectId, required: true, ref: "Comment" }]
 });
