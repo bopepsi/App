@@ -9,6 +9,7 @@ const userSchema = new Schema({
     age: { type: Number, required: true },
     bio: { type: String, required: true, minlength: 6 },
     image: { type: String, required: true },
+    likes: { type: Number, required: true },
     backgroundImage: { type: String, required: true },
     location: {
         lat: { type: Number, required: true },
