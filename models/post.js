@@ -10,6 +10,7 @@ const postSchema = new Schema({
     likes: { type: Number, required: true },
     dislikes: { type: Number, required: true },
     collections: { type: Number, required: true },
+    address: { type: String, required: true },
     location: {
         lat: { type: Number, required: true },
         lng: { type: Number, required: true }
