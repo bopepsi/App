@@ -2,6 +2,7 @@ require('dotenv').config();
 // console.log(process.env)
 const express = require('express');
 const bodyParser = require('body-parser');
+const mongoose = require('mongoose');
 
 const postsRoutes = require('./routes/posts-routes');
 const userRoutes = require('./routes/user-routes');
@@ -30,4 +31,7 @@ app.use((error, req, res, next) => {
     res.json({ message: error.message || 'An error occurred!' });
 })
 
-app.listen(5000);
+mongoose
+    .connect(process.env.MONGODB_API)
+    .then(() => app.listen(5000))
+    .catch(err => console.log(err))
