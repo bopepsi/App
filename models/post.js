@@ -17,7 +17,9 @@ const postSchema = new Schema({
     },
     date: { type: Date, default: Date.now },
     comments: [{ type: mongoose.Types.ObjectId, required: true, ref: "Comment" }],
-    creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" }
+    creator: { type: String, required: true },
 });
 
 module.exports = mongoose.model('Post', postSchema);
+
+// creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" }

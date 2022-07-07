@@ -2,6 +2,7 @@ const HttpError = require('../models/http-error');
 const uuid = require('uuid');
 const { validationResult } = require('express-validator');
 const { getCoordsForAddress, getAddressForCoords } = require('../util/location');
+const Post = require('../models/post');
 
 let DUMMY_POSTS = [
     {
@@ -58,15 +59,20 @@ let DUMMY_POSTS = [
 ]
 
 
-const getPostById = (req, res, next) => {
+const getPostById = async (req, res, next) => {
     const pId = req.params.pid;
     console.log('This is postId in req: ', pId);
-    const post = DUMMY_POSTS.find((post) => post.id === pId);
+    let post;
+    try {
+        post = await Post.findById(pId).exec();
+    } catch (error) {
+        return next(new HttpError('Something went wrong', 500));
+    };
     if (!post) {
         const error = new HttpError('Could not find the post.', 404);
         return next(error);
     };
-    res.json({ post });
+    res.json({ post: post.toObject({ getters: true }) });
 };
 
 const getPostsByUserId = (req, res, next) => {
@@ -87,8 +93,9 @@ const createPost = async (req, res, next) => {
         console.log(errors);
         return next(new HttpError("Invalid inputs passed, please check your data.", 422));
     }
-    const { title, description, tags, image, address, creator } = req.body;
-
+    let { title, description, tags, image, address, creator } = req.body;
+    const likes = 0, dislikes = 0, collections = 0, comments = [];
+    tags = tags ? tags : [];
     let coordinates;
     try {
         const result = await getCoordsForAddress(address);
@@ -97,12 +104,12 @@ const createPost = async (req, res, next) => {
     } catch (error) {
         return next(error);
     }
-
-
-    const createdPost = {
-        id: uuid.v4(), title, description, tags, image, location: coordinates, address:formalAddress, creator
+    const createdPost = new Post({ title, description, tags, image, likes, dislikes, collections, address, location: coordinates, comments, creator });
+    try {
+        await createdPost.save();
+    } catch (error) {
+        return next(new HttpError('Oops, creating post failed', 500));
     }
-    DUMMY_POSTS.push(createdPost);
     res.status(201).json({ createdPost });
 };
 
