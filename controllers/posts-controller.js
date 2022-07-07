@@ -75,16 +75,21 @@ const getPostById = async (req, res, next) => {
     res.json({ post: post.toObject({ getters: true }) });
 };
 
-const getPostsByUserId = (req, res, next) => {
+const getPostsByUserId = async (req, res, next) => {
     const uId = req.params.uid;
     console.log('This is userId in req: ', uId);
-    const posts = DUMMY_POSTS.filter((post) => post.creator === uId);
+    let posts;
+    try {
+        posts = await Post.find({ creator: uId }).exec();
+    } catch (error) {
+        return next(new HttpError('Something went wrong', 500));
+    };
     if (!posts || posts.length === 0) {
         const error = new Error('Could not find posts for user.');
         error.code = 404;
         return next(error);
     };
-    res.json({ posts });
+    res.json({ posts: posts.map(post => post.toObject({ getters: true })) });
 };
 
 const createPost = async (req, res, next) => {
@@ -113,30 +118,136 @@ const createPost = async (req, res, next) => {
     res.status(201).json({ createdPost });
 };
 
-const updatePost = (req, res, next) => {
+const updatePost = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         console.log(errors);
         return next(new HttpError("Invalid inputs passed, please check your data.", 422));
     }
-    const { title, description, image, tags } = req.body;
+    const { title, description, image, tags, likePost, dislikePost, addToCollection, removeFromCollection, addComment, commentMessage } = req.body;
     const postId = req.params.pid;
-    const updatedPost = { ...DUMMY_POSTS.find(post => post.id === postId) };
-    const postIndex = DUMMY_POSTS.findIndex(post => post.id === postId);
-    updatedPost.title = title;
-    updatedPost.description = description;
-    updatedPost.image = image;
-    updatedPost.tags = tags;
-    DUMMY_POSTS[postIndex] = updatedPost;
-    res.status(200).json({ post: updatedPost });
+
+    let post;
+    try {
+        post = await Post.findById(postId).exec();
+    } catch (error) {
+        return next(new HttpError('Something went wrong when fecthing post', 500));
+    };
+    if (!post) {
+        const error = new HttpError('Could not find the post.', 404);
+        return next(error);
+    };
+    post.title = title;
+    post.description = description;
+    post.image = image;
+    post.tags = tags;
+    try {
+        await post.save();
+    } catch (error) {
+        return next(new HttpError('Something went wrong when saving post', 500));
+    }
+    res.status(200).json({ post: post.toObject({ getters: true }) });
 }
 
-const deletePost = (req, res, next) => {
+const likeOrDislkePost = async (req, res, next) => {
+    const { like, dislike } = req.body;
     const postId = req.params.pid;
-    if (!DUMMY_POSTS.find(p => p.id === postId)) {
-        return next(new HttpError('Could not find the place.', 404));
+
+    let post;
+    try {
+        post = await Post.findById(postId).exec();
+    } catch (error) {
+        return next(new HttpError('Something went wrong when fecthing post', 500));
+    };
+    if (!post) {
+        const error = new HttpError('Could not find the post.', 404);
+        return next(error);
+    };
+    if (like) {
+        post.likes = post.likes + 1;
     }
-    DUMMY_POSTS = DUMMY_POSTS.filter(post => post.id !== postId);
+    if (dislike) {
+        post.dislikes = post.dislikes + 1;
+    }
+    try {
+        await post.save();
+    } catch (error) {
+        return next(new HttpError('Something went wrong when saving post', 500));
+    }
+    res.status(200).json({ post: post.toObject({ getters: true }) });
+}
+
+const addOrRemovePostFromCollection = async (req, res, next) => {
+    const { addToCollection, removeFromCollection } = req.body;
+    const postId = req.params.pid;
+
+    let post;
+    try {
+        post = await Post.findById(postId).exec();
+    } catch (error) {
+        return next(new HttpError('Something went wrong when fecthing post', 500));
+    };
+    if (!post) {
+        const error = new HttpError('Could not find the post.', 404);
+        return next(error);
+    };
+    if (addToCollection) {
+        post.collections = post.collections + 1;
+    }
+    if (removeFromCollection) {
+        post.collections = post.collections - 1;
+    }
+    try {
+        await post.save();
+    } catch (error) {
+        return next(new HttpError('Something went wrong when saving post', 500));
+    }
+    res.status(200).json({ post: post.toObject({ getters: true }) });
+}
+//! Need to work on comments relationship with post later
+const addComment = async (req, res, next) => {
+    const { comments } = req.body;
+    const postId = req.params.pid;
+
+    if (!comments || comments.trim().length === 0) {
+        return next(new HttpError('Please check you input'), 422);
+    }
+
+    let post;
+    try {
+        post = await Post.findById(postId).exec();
+    } catch (error) {
+        return next(new HttpError('Something went wrong when fecthing post', 500));
+    };
+    if (!post) {
+        const error = new HttpError('Could not find the post.', 404);
+        return next(error);
+    };
+
+    post.comments.push(comments);
+
+    try {
+        await post.save();
+    } catch (error) {
+        return next(new HttpError('Something went wrong when saving post', 500));
+    }
+    res.status(200).json({ post: post.toObject({ getters: true }) });
+}
+
+
+const deletePost = async (req, res, next) => {
+    const postId = req.params.pid;
+    let post;
+    try {
+        post = await Post.findById(postId);
+    } catch (error) {
+        return next(new HttpError('Oops, some thing went wrong when fetching during deleting', 500));
+    }
+    try {
+        await post.remove();
+    } catch (error) {
+        return next(new HttpError('Oops, some thing went wrong when deleting', 500));
+    }
     res.status(200).json({ message: 'Post deleted.' });
 }
 
@@ -145,5 +256,8 @@ module.exports = {
     getPostsByUserId,
     createPost,
     updatePost,
+    likeOrDislkePost,
+    addOrRemovePostFromCollection,
+    addComment,
     deletePost,
 }
