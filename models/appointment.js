@@ -7,8 +7,10 @@ const appointmentSchema = new Schema({
     creator: { type: mongoose.Types.ObjectId, required: true, ref: "User" },
     title: { type: String, required: true },
     desscription: { type: String, required: true },
+    duration: { type: String, required: true },
     address: { type: String, required: true },
-    appointmentData: { type: Date, required: true },
+    appointmentDate: { type: Date, required: true },
+    pending: { type: Boolean, required: true },
     recieverAccepted: { type: Boolean, required: true },
     recieverRejected: { type: Boolean, required: true },
     date: { type: Date, default: Date.now }

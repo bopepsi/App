@@ -17,8 +17,9 @@ const userSchema = new Schema({
         lng: { type: Number, required: true }
     },
     date: { type: Date, default: Date.now },
-    //? One user may have many places, collections
+    // Creator create an appoinment
     appointments:[{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
+    // User recieve an appoinment, pending
     invatations:[{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
     likedPosts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Post" }],
     posts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Post" }],
