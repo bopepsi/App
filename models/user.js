@@ -18,6 +18,7 @@ const userSchema = new Schema({
     },
     date: { type: Date, default: Date.now },
     //? One user may have many places, collections
+    appointments:[{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
     likedPosts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Post" }],
     posts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Post" }],
     collections: [{ type: mongoose.Types.ObjectId, required: true, ref: "Collection" }],
