@@ -1,5 +1,6 @@
 const HttpError = require('../models/http-error');
 const uuid = require('uuid');
+const { validationResult } = require('express-validator');
 
 let DUMMY_POSTS = [
     {
@@ -80,15 +81,25 @@ const getPostsByUserId = (req, res, next) => {
 };
 
 const createPost = (req, res, next) => {
-    const { title, description, tags, image, location, creator } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        console.log(errors);
+        return next(new HttpError("Invalid inputs passed, please check your data.", 422));
+    }
+    const { title, description, tags, image, location, address, creator } = req.body;
     const createdPost = {
-        id: uuid.v4(), title, description, tags, image, location, creator
+        id: uuid.v4(), title, description, tags, image, location, address, creator
     }
     DUMMY_POSTS.push(createdPost);
     res.status(201).json({ createdPost });
 };
 
 const updatePost = (req, res, next) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+        console.log(errors);
+        return next(new HttpError("Invalid inputs passed, please check your data.", 422));
+    }
     const { title, description, image, tags } = req.body;
     const postId = req.params.pid;
     const updatedPost = { ...DUMMY_POSTS.find(post => post.id === postId) };
@@ -103,6 +114,9 @@ const updatePost = (req, res, next) => {
 
 const deletePost = (req, res, next) => {
     const postId = req.params.pid;
+    if (!DUMMY_POSTS.find(p => p.id === postId)) {
+        return next(new HttpError('Could not find the place.', 404));
+    }
     DUMMY_POSTS = DUMMY_POSTS.filter(post => post.id !== postId);
     res.status(200).json({ message: 'Post deleted.' });
 }
