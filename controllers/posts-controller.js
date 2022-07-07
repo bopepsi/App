@@ -234,7 +234,6 @@ const addComment = async (req, res, next) => {
     res.status(200).json({ post: post.toObject({ getters: true }) });
 }
 
-
 const deletePost = async (req, res, next) => {
     const postId = req.params.pid;
     let post;
