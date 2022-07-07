@@ -71,7 +71,7 @@ const getPostsByUserId = (req, res, next) => {
     const uId = req.params.uid;
     console.log('This is userId in req: ', uId);
     const posts = DUMMY_POSTS.filter((post) => post.creator === uId);
-    if (!posts) {
+    if (!posts || posts.length === 0) {
         const error = new Error('Could not find posts for user.');
         error.code = 404;
         return next(error);
