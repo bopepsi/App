@@ -6,14 +6,14 @@ const userSchema = new Schema({
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, minlength: 6 },
-    age: { type: Number, required: true },
-    bio: { type: String, required: true, minlength: 6 },
+    age: { type: Number },
+    bio: { type: String },
     image: { type: String, required: true },
     likes: { type: Number, required: true },
     backgroundImage: { type: String, required: true },
     location: {
-        lat: { type: Number, required: true },
-        lng: { type: Number, required: true }
+        lat: { type: Number },
+        lng: { type: Number }
     },
     date: { type: Date, default: Date.now },
     //? One user may have many places, collections
