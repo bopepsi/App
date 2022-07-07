@@ -18,9 +18,10 @@ const userSchema = new Schema({
     },
     date: { type: Date, default: Date.now },
     // Creator create an appoinment
-    appointments:[{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
+    appointments: [{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
     // User recieve an appoinment, pending
-    invatations:[{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
+    invatations: [{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
+    reviews: [{ type: mongoose.Types.ObjectId, required: true, ref: "Review" }],
     likedPosts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Post" }],
     posts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Post" }],
     collections: [{ type: mongoose.Types.ObjectId, required: true, ref: "Collection" }],
