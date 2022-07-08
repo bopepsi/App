@@ -9,6 +9,7 @@ const userRoutes = require('./routes/user-routes');
 const collectionsRoutes = require('./routes/collections-routes');
 const commentsRoutes = require('./routes/comments-routes');
 const appointmentsRoutes = require('./routes/appointments-routes');
+const reviewsRoutes = require('./routes/reviews-routes');
 const HttpError = require('./models/http-error');
 
 const app = express();
@@ -21,6 +22,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/collections', collectionsRoutes);
 app.use('/api/comments', commentsRoutes);
 app.use('/api/appointments', appointmentsRoutes);
+app.use('/api/reviews', reviewsRoutes);
 
 app.use((req, res, next) => {
     next(new HttpError('Route not exist', 404));

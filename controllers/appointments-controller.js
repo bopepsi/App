@@ -8,7 +8,7 @@ const getAppointmentsByUserId = async (req, res, next) => {
     let userId = req.params.uid;
     let user;
     try {
-        user = await User.findById(userId).populate('appointments');
+        user = await User.findById(userId).populate('appointments reviews');
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
     };
@@ -62,7 +62,7 @@ const createAppointment = async (req, res, next) => {
         return next(error);
     };
     //* create new Appointment instance
-    let newAppointment = new Appointment({ reciever, creator, title, description, duration, address: formalAddress, location: coordinates, appointmentDate, pending: true, recieverAccepted: false, recieverRejected: false });
+    let newAppointment = new Appointment({ reciever, creator, title, description, duration, address: formalAddress, location: coordinates, appointmentDate, pending: true, recieverAccepted: false, recieverRejected: false, reviews: [] });
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
