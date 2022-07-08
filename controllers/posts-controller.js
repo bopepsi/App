@@ -115,13 +115,13 @@ const updatePost = async (req, res, next) => {
     res.status(200).json({ post: post.toObject({ getters: true }) });
 }
 
-const likeOrDislkePost = async (req, res, next) => {
-    const { like, dislike } = req.body;
+const addPostToLikes = async (req, res, next) => {
     const postId = req.params.pid;
-
+    const userId = req.params.uid;
+    //* find post
     let post;
     try {
-        post = await Post.findById(postId).exec();
+        post = await Post.findById(postId);
     } catch (error) {
         return next(new HttpError('Something went wrong when fecthing post', 500));
     };
@@ -129,27 +129,40 @@ const likeOrDislkePost = async (req, res, next) => {
         const error = new HttpError('Could not find the post.', 404);
         return next(error);
     };
-    if (like) {
-        post.likes = post.likes + 1;
+
+    //* add post to user's likedPosts
+    post.likes = post.likes + 1;
+    let user;
+    try {
+        user = await User.findById(userId).populate('likedPosts');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
     }
-    if (dislike) {
-        post.dislikes = post.dislikes + 1;
+    if (!user) {
+        return next(new HttpError('Could not find user.', 422));
     }
     try {
-        await post.save();
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await post.save({ session: sess });
+        user.likedPosts.push(post);
+        await user.save({ session: sess });
+        await sess.commitTransaction();
     } catch (error) {
-        return next(new HttpError('Something went wrong when saving post', 500));
-    }
-    res.status(200).json({ post: post.toObject({ getters: true }) });
-}
+        return next(new HttpError('Oops something is wrong, could not like this post.'), 500);
+    };
 
-const addOrRemovePostFromCollection = async (req, res, next) => {
-    const { addToCollection, removeFromCollection } = req.body;
+    res.status(201).json({ message: 'Post added to fav.' });
+
+};
+
+const removePostFromLikes = async (req, res, next) => {
     const postId = req.params.pid;
-
+    const userId = req.params.uid;
+    //* find post
     let post;
     try {
-        post = await Post.findById(postId).exec();
+        post = await Post.findById(postId);
     } catch (error) {
         return next(new HttpError('Something went wrong when fecthing post', 500));
     };
@@ -157,19 +170,50 @@ const addOrRemovePostFromCollection = async (req, res, next) => {
         const error = new HttpError('Could not find the post.', 404);
         return next(error);
     };
-    if (addToCollection) {
-        post.collections = post.collections + 1;
+
+    //* remove post from user's likedPosts
+    post.likes = post.likes - 1;
+    let user;
+    try {
+        user = await User.findById(userId).populate('likedPosts');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
     }
-    if (removeFromCollection) {
-        post.collections = post.collections - 1;
+    if (!user) {
+        return next(new HttpError('Could not find user.', 422));
     }
+    try {
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await post.save({ session: sess });
+        user.likedPosts.pull(post);
+        await user.save({ session: sess });
+        await sess.commitTransaction();
+    } catch (error) {
+        return next(new HttpError('Oops something is wrong, could not like this post.'), 500);
+    };
+
+    res.status(201).json({ message: 'Post removed from fav.' });
+};
+
+const dislikePost = async (req, res, next) => {
+    const postId = req.params.pid;
+    //* find post
+    let post;
+    try {
+        post = await Post.findById(postId);
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    }
+    post.dislikes = post.dislikes + 1;
     try {
         await post.save();
     } catch (error) {
         return next(new HttpError('Something went wrong when saving post', 500));
     }
-    res.status(200).json({ post: post.toObject({ getters: true }) });
+    res.status(200).json({ message: 'Post disliked.' });
 }
+
 //! Need to work on comments relationship with post later
 const addComment = async (req, res, next) => {
     const { comments } = req.body;
@@ -231,8 +275,9 @@ module.exports = {
     getPostsByUserId,
     createPost,
     updatePost,
-    likeOrDislkePost,
-    addOrRemovePostFromCollection,
+    dislikePost,
     addComment,
     deletePost,
+    addPostToLikes,
+    removePostFromLikes
 }
