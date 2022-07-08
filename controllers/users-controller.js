@@ -1,4 +1,5 @@
 const { validationResult } = require('express-validator');
+const { default: mongoose } = require('mongoose');
 const HttpError = require('../models/http-error');
 const User = require('../models/user');
 const { getCoordsForAddress } = require('../util/location');
@@ -166,6 +167,84 @@ const editUserProfile = async (req, res, next) => {
 
 }
 
+const followUser = async (req, res, next) => {
+    const userId = req.params.uid;
+    const { creator } = req.body;
+    //* find this creator(follower) user info
+    let thisUser;
+    try {
+        thisUser = await User.findById(creator).populate('follows');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    }
+    if (!thisUser) {
+        return next(new HttpError('Could not find creator user.', 422));
+    }
+    //* find to be followed user info
+    let user;
+    try {
+        user = await User.findById(userId).populate('followers');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    }
+    if (!user) {
+        return next(new HttpError('Could not find creator user.', 422));
+    }
+    //* Update followings and followers then save
+    try {
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        thisUser.follows.push(user);
+        user.followers.push(thisUser);
+        await thisUser.save({ session: sess });
+        await user.save({ session: sess });
+        await sess.commitTransaction();
+    } catch (error) {
+        return next(new HttpError('Oops, follow user failed.', 500));
+    };
+
+    res.status(201).json({ message: 'Follow success.' });
+}
+
+const unFollowUser = async (req, res, next) => {
+    const userId = req.params.uid;
+    const { creator } = req.body;
+    //* find this creator(follower) user info
+    let thisUser;
+    try {
+        thisUser = await User.findById(creator).populate('follows');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    }
+    if (!thisUser) {
+        return next(new HttpError('Could not find creator user.', 422));
+    }
+    //* find to be followed user info
+    let user;
+    try {
+        user = await User.findById(userId).populate('followers');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    }
+    if (!user) {
+        return next(new HttpError('Could not find creator user.', 422));
+    }
+    //* Update followings and followers then save
+    try {
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        thisUser.follows.pull(user);
+        user.followers.pull(thisUser);
+        await thisUser.save({ session: sess });
+        await user.save({ session: sess });
+        await sess.commitTransaction();
+    } catch (error) {
+        return next(new HttpError('Oops, follow user failed.', 500));
+    };
+
+    res.status(201).json({ message: 'Unfollow success.' });
+}
+
 module.exports = {
     signup,
     login,
@@ -173,4 +252,6 @@ module.exports = {
     getUserFollowers,
     getUserFollowings,
     editUserProfile,
+    followUser,
+    unFollowUser,
 }
