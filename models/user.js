@@ -29,6 +29,8 @@ const userSchema = new Schema({
     collections: [{ type: mongoose.Types.ObjectId, required: true, ref: "Collection" }],
     follows: [{ type: mongoose.Types.ObjectId, required: true, ref: "User" }],
     followers: [{ type: mongoose.Types.ObjectId, required: true, ref: "User" }],
+    comments: [{ type: mongoose.Types.ObjectId, required: true, ref: "Comment" }],
+    unreadNotifications: { type: Number, required: true },
     date: { type: Date, default: Date.now },
 });
 
