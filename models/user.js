@@ -7,7 +7,10 @@ const userSchema = new Schema({
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true, minlength: 6 },
     age: { type: Number, required: true },
-    bio: { type: Mixed, required: true },
+    bio: { type: String, required: true },
+    gender: { type: String, required: true },
+    gymMembership: [{ type: String, required: true }],
+    athleteTypes: [{ type: String, required: true }],
     image: { type: String, required: true },
     likes: { type: Number, required: true },
     backgroundImage: { type: String, required: true },
@@ -16,17 +19,17 @@ const userSchema = new Schema({
         lat: { type: Number, required: true },
         lng: { type: Number, required: true }
     },
-    date: { type: Date, default: Date.now },
     // Creator create an appoinment
     appointments: [{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
     // User recieve an appoinment, pending
-    invatations: [{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
+    invitations: [{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
     reviews: [{ type: mongoose.Types.ObjectId, required: true, ref: "Review" }],
     likedPosts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Post" }],
     posts: [{ type: mongoose.Types.ObjectId, required: true, ref: "Post" }],
     collections: [{ type: mongoose.Types.ObjectId, required: true, ref: "Collection" }],
     follows: [{ type: mongoose.Types.ObjectId, required: true, ref: "User" }],
-    followers: [{ type: mongoose.Types.ObjectId, required: true, ref: "User" }]
+    followers: [{ type: mongoose.Types.ObjectId, required: true, ref: "User" }],
+    date: { type: Date, default: Date.now },
 });
 
 //? WIth unique, we can query form db as fast as possible.

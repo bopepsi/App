@@ -1,8 +1,10 @@
 const express = require('express');
 const { check } = require('express-validator')
 
-const { signup, login, getUserFollowers, getUserFollowings, editUserProfile } = require('../controllers/users-controller');
+const { signup, login, getUserFollowers, getUserFollowings, editUserProfile, getAllUsers } = require('../controllers/users-controller');
 const router = express.Router();
+
+router.get('/', getAllUsers)
 
 router.get('/followers/:uid', getUserFollowers);
 

@@ -102,6 +102,7 @@ const createPost = async (req, res, next) => {
     const likes = 0, dislikes = 0, collections = 0, comments = [];
     tags = tags ? tags : [];
     let coordinates;
+    let formalAddress;
     try {
         const result = await getCoordsForAddress(address);
         coordinates = result.coordinates;
@@ -109,7 +110,7 @@ const createPost = async (req, res, next) => {
     } catch (error) {
         return next(error);
     }
-    const createdPost = new Post({ title, description, tags, image, likes, dislikes, collections, address, location: coordinates, comments, creator });
+    const createdPost = new Post({ title, description, tags, image, likes, dislikes, collections, address:formalAddress, location: coordinates, comments, creator });
     try {
         await createdPost.save();
     } catch (error) {
