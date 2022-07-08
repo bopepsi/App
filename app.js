@@ -6,6 +6,7 @@ const mongoose = require('mongoose');
 
 const postsRoutes = require('./routes/posts-routes');
 const userRoutes = require('./routes/user-routes');
+const collectionsRoutes = require('./routes/collections-routes');
 const HttpError = require('./models/http-error');
 
 const app = express();
@@ -15,6 +16,7 @@ app.use(bodyParser.json());
 
 app.use('/api/posts', postsRoutes);
 app.use('/api/user', userRoutes);
+app.use('/api/collections', collectionsRoutes);
 
 app.use((req, res, next) => {
     next(new HttpError('Route not exist', 404));
