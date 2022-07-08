@@ -6,6 +6,7 @@ const HttpError = require('../models/http-error');
 
 const getCollectionsByUid = async (req, res, next) => {
     const uId = req.params.uid;
+    //* find user then populate collections
     let user;
     try {
         user = await User.findById(uId).populate('collections');
@@ -20,9 +21,10 @@ const getCollectionsByUid = async (req, res, next) => {
 //! fix creator later
 const createCollection = async (req, res, next) => {
     const { title, creator } = req.body;
-
+    //* create new collection instance
     let newCollection = new Collection({ title, posts: [], creator });
 
+    //* find user
     let user;
     try {
         user = await User.findById(creator);
@@ -33,6 +35,7 @@ const createCollection = async (req, res, next) => {
         return next(new HttpError('Could not find user.', 404));
     };
 
+    //* save collection and update user
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
@@ -128,7 +131,26 @@ const removePostFromCollection = async (req, res, next) => {
 }
 
 const editCollection = async (req, res, next) => {
-
+    const cId = req.params.cid;
+    const { title } = req.body;
+    //* find collection
+    let collection;
+    try {
+        collection = await Collection.findById(cId);
+    } catch (error) {
+        return next(new HttpError('Could not find collection.', 404));
+    }
+    if (!collection) {
+        return next(new HttpError('Could not find collection.', 404));
+    }
+    //* edit collection and save
+    collection.title = title;
+    try {
+        await collection.save();
+    } catch (error) {
+        return next(new HttpError('Could not update collection.', 500));
+    }
+    res.json({ collection: collection.toObject({ getters: true }) });
 }
 
 const deleteCollection = async (req, res, next) => {
