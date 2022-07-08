@@ -188,6 +188,31 @@ const unLikeAComment = async (req, res, next) => {
     res.status(201).json({ message: 'un-Liked comment.', comment: comment.toObject({ getters: true }) });
 }
 
+const resetUnreadCommentsAndNotifications = async (req, res, next) => {
+    let userId = req.params.uid;
+    //* find user
+    let user;
+    try {
+        user = await User.findById(userId);
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    };
+    if (!user) {
+        return next(new HttpError('Could not find user', 422));
+    };
+
+    user.unreadNotifications = 0;
+    user.unreadComments = [];
+
+    try {
+        await user.save();
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    };
+
+    res.status(201).json('Unread comments reset');
+}
+
 module.exports = {
     getCommentsByUserId,
     getCommentsByPostId,
@@ -195,5 +220,6 @@ module.exports = {
     createCommentOnPost,
     replyToComment,
     likeAComment,
-    unLikeAComment
+    unLikeAComment,
+    resetUnreadCommentsAndNotifications,
 }
