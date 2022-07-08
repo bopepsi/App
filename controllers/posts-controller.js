@@ -1,63 +1,9 @@
 const HttpError = require('../models/http-error');
-const uuid = require('uuid');
 const { validationResult } = require('express-validator');
 const { getCoordsForAddress, getAddressForCoords } = require('../util/location');
 const Post = require('../models/post');
-
-let DUMMY_POSTS = [
-    {
-        id: 'p1',
-        title: 'Funny cats',
-        description: 'hahahaha',
-        tags: ['cat'],
-        image: 'imgURL',
-        likes: 10,
-        dislikes: 2,
-        collections: 0,
-        location: {
-            lat: 122,
-            lng: 200
-        },
-        date: '2022-06-01',
-        comments: [],
-        creator: 'bob'
-    },
-    {
-        id: 'p2',
-        title: 'Crazy max',
-        description: 'hahahaha',
-        tags: ['max'],
-        image: 'imgURL',
-        likes: 100,
-        dislikes: 21,
-        collections: 4,
-        location: {
-            lat: 112,
-            lng: 253
-        },
-        date: '2022-06-21',
-        comments: [],
-        creator: 'max'
-    },
-    {
-        id: 'p3',
-        title: 'No WAY!',
-        description: 'hahahaha',
-        tags: ['crazy'],
-        image: 'imgURL',
-        likes: 1000,
-        dislikes: 2,
-        collections: 69,
-        location: {
-            lat: 56,
-            lng: 96
-        },
-        date: '2022-06-30',
-        comments: [],
-        creator: 'max'
-    },
-]
-
+const User = require('../models/user');
+const { default: mongoose } = require('mongoose');
 
 const getPostById = async (req, res, next) => {
     const pId = req.params.pid;
@@ -110,11 +56,30 @@ const createPost = async (req, res, next) => {
     } catch (error) {
         return next(error);
     }
-    const createdPost = new Post({ title, description, tags, image, likes, dislikes, collections, address:formalAddress, location: coordinates, comments, creator });
+    const createdPost = new Post({ title, description, tags, image, likes, dislikes, collections, address: formalAddress, location: coordinates, comments, creator });
+
+    let user;
     try {
-        await createdPost.save();
+        user = await User.findById(creator);
     } catch (error) {
-        return next(new HttpError('Oops, creating post failed', 500));
+        return next(new HttpError('Oops something is wrong.', 500));
+    }
+
+    if (!user) {
+        return next(new HttpError('Could not find user.', 404));
+    }
+
+    console.log(user);
+
+    try {
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await createdPost.save({ session: sess });
+        user.posts.push(createdPost);
+        await user.save({ session: sess });
+        await sess.commitTransaction();
+    } catch (error) {
+        return next(new HttpError('Oops, creating post failed.', 500));
     }
     res.status(201).json({ createdPost });
 };
@@ -239,12 +204,22 @@ const deletePost = async (req, res, next) => {
     const postId = req.params.pid;
     let post;
     try {
-        post = await Post.findById(postId);
+        post = await Post.findById(postId).populate('creator');
     } catch (error) {
         return next(new HttpError('Oops, some thing went wrong when fetching during deleting', 500));
     }
+
+    if (!post) {
+        return next(new HttpError('Could not find post.', 404));
+    }
+
     try {
-        await post.remove();
+        const sess = await mongoose.startSession();
+        sess.startTransaction();
+        await post.remove({ session: sess });
+        post.creator.posts.pull(post);
+        await post.creator.save({ session: sess });
+        await sess.commitTransaction();
     } catch (error) {
         return next(new HttpError('Oops, some thing went wrong when deleting', 500));
     }

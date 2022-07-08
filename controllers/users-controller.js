@@ -1,18 +1,7 @@
 const { validationResult } = require('express-validator');
-const uuid = require('uuid');
 const HttpError = require('../models/http-error');
 const User = require('../models/user');
 const { getCoordsForAddress } = require('../util/location');
-
-let DUMMY_USERS = [
-    {
-        id: 'u1',
-        name: 'bob',
-        email: 'bob@gmail.com',
-        password: '111111',
-        image: 'imageURL'
-    }
-]
 
 const getAllUsers = async (req, res, next) => {
     let users;
@@ -25,12 +14,32 @@ const getAllUsers = async (req, res, next) => {
 
 }
 
-const getUserFollowings = (req, res, next) => {
-
+const getUserFollowings = async (req, res, next) => {
+    const uId = req.params.uid;
+    let user;
+    try {
+        user = await User.findById(uId).populate('follows');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong', 500));
+    }
+    if (!user) {
+        return next(new HttpError('Could not find user.', 404));
+    }
+    res.status(201).json({ followings: user.follows.map(item => item.toObject({ getters: true })) });
 }
 
-const getUserFollowers = (req, res, next) => {
-
+const getUserFollowers = async (req, res, next) => {
+    const uId = req.params.uid;
+    let user;
+    try {
+        user = await User.findById(uId).populate('follows');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong', 500));
+    }
+    if (!user) {
+        return next(new HttpError('Could not find user.', 404));
+    }
+    res.status(201).json({ followings: user.followers.map(item => item.toObject({ getters: true })) });
 }
 
 const signup = async (req, res, next) => {
@@ -108,7 +117,49 @@ const login = async (req, res, next) => {
 
 }
 
-const editUserProfile = (req, res, next) => {
+const editUserProfile = async (req, res, next) => {
+    let uId = req.params.uid;
+    const { name, password, age, bio, gender, gymMembership, athleteTypes, image, backgroundImage, address } = req.body;
+    let user;
+    try {
+        user = await User.findById(uId);
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    }
+
+    if (!user) {
+        return next(new HttpError('Could not find user.', 404));
+    }
+
+    let coordinates;
+    let formalAddress;
+    try {
+        const result = await getCoordsForAddress(address);
+        coordinates = result.coordinates;
+        formalAddress = result.formalAddress;
+    } catch (error) {
+        return next(error);
+    }
+
+    user.name = name;
+    user.password = password;
+    user.age = age;
+    user.bio = bio;
+    user.gender = gender;
+    user.gymMembership = gymMembership;
+    user.athleteTypes = athleteTypes;
+    user.image = image;
+    user.backgroundImage = backgroundImage;
+    user.address = formalAddress;
+    user.location = coordinates;
+
+    try {
+        await user.save();
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    }
+
+    res.status(201).json({ message: 'User profile updated', user: user.toObject({ getters: true }) })
 
 }
 
