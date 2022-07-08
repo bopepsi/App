@@ -2,7 +2,7 @@ const express = require('express');
 const { getCollectionsByUid, createCollection, addPostToCollection, removePostFromCollection, editCollection, deleteCollection } = require('../controllers/collections-controller');
 const router = express.Router();
 
-router.get('/', getCollectionsByUid);
+router.get('/:uid', getCollectionsByUid);
 
 router.post('/', createCollection);
 

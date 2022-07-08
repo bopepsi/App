@@ -4,8 +4,18 @@ const User = require('../models/user');
 const HttpError = require('../models/http-error');
 
 const getCollectionsByUid = async (req, res, next) => {
-
-}
+    const uId = req.params.uid;
+    let user;
+    try {
+        user = await User.findById(uId).populate('collections');
+    } catch (error) {
+        return next(new HttpError('Oops something is wrong.', 500));
+    };
+    if (!user) {
+        return next(new HttpError('Could not find user.', 404));
+    };
+    res.status(201).json({ collections: user.collections.map(c => c.toObject({ getters: true })) });
+};
 //! fix creator later
 const createCollection = async (req, res, next) => {
     const { title, creator } = req.body;
