@@ -65,6 +65,8 @@ const signup = async (req, res, next) => {
     let collections = [];
     let follows = [];
     let followers = [];
+    let comments = [];
+    let unreadNotifications = 0;
 
     let coordinates;
     let formalAddress;
@@ -87,7 +89,7 @@ const signup = async (req, res, next) => {
         return next(new HttpError('User already exists, login instead.', 422));
     }
 
-    const newUser = new User({ name, email, password, age, bio, gender, gymMembership, athleteTypes, image, likes, backgroundImage, address: formalAddress, location: coordinates, appointments, invitations, reviews, likedPosts, posts, collections, follows, followers });
+    const newUser = new User({ name, email, password, age, bio, gender, gymMembership, athleteTypes, image, likes, backgroundImage, address: formalAddress, location: coordinates, appointments, invitations, reviews, likedPosts, posts, collections, follows, followers, comments, unreadNotifications });
 
     try {
         await newUser.save();
