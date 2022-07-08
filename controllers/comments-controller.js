@@ -74,6 +74,7 @@ const createCommentOnPost = async (req, res, next) => {
         return next(new HttpError('Oops something went wrong.', 500));
     };
     post.creator.unreadNotifications = post.creator.unreadNotifications + 1;
+    post.creator.unreadComments.push(newComment);
     console.log(post.creator);
     //* save new comment, update post comments and user comments arr and increase post owner's unreadNotification by one
     try {
@@ -111,6 +112,7 @@ const replyToComment = async (req, res, next) => {
         return next(new HttpError('Oops something went wrong.', 500));
     }
     comment.creator.unreadNotifications = comment.creator.unreadNotifications + 1;
+    comment.creator.unreadComments.push(newReply);
     //* update comment replies, creator comments list and save all
     try {
         const sess = await mongoose.startSession();

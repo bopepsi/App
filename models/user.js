@@ -31,6 +31,7 @@ const userSchema = new Schema({
     followers: [{ type: mongoose.Types.ObjectId, required: true, ref: "User" }],
     comments: [{ type: mongoose.Types.ObjectId, required: true, ref: "Comment" }],
     unreadNotifications: { type: Number, required: true },
+    unreadComments: [{ type: mongoose.Types.ObjectId, required: true, ref: "Comment" }],
     date: { type: Date, default: Date.now },
 });
 
