@@ -3,10 +3,12 @@ const { check } = require('express-validator');
 const fileUpload = require('../middleware/avatar-upload');
 const checkAuth = require('../middleware/check-auth');
 
-const { signup, login, getUserFollowers, getUserFollowings, editUserProfile, getAllUsers, followUser, unFollowUser } = require('../controllers/users-controller');
+const { signup, login, getUserFollowers, getUserFollowings, editUserProfile, getAllUsers, followUser, unFollowUser, getUserById } = require('../controllers/users-controller');
 const router = express.Router();
 
-router.get('/', getAllUsers)
+router.get('/', getAllUsers);
+
+router.get('/:uid',getUserById);
 
 router.get('/followers/:uid', getUserFollowers);
 

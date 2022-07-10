@@ -17,6 +17,20 @@ const getAllUsers = async (req, res, next) => {
 
 }
 
+const getUserById = async (req, res, next) => {
+    let userId = req.params.uid;
+    let user;
+    try {
+        user = await User.findById(userId).populate('posts');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong'), 500)
+    };
+    if (!user) {
+        return next(new HttpError('User not exist'), 404);
+    };
+    res.status(201).json({ user: user.toObject({ getters: true }), posts: user.posts.map(p => p.toObject({ getters: true })) });
+}
+
 const getUserFollowings = async (req, res, next) => {
     const uId = req.params.uid;
     let user;
@@ -293,6 +307,7 @@ module.exports = {
     signup,
     login,
     getAllUsers,
+    getUserById,
     getUserFollowers,
     getUserFollowings,
     editUserProfile,
