@@ -224,8 +224,8 @@ const editUserProfile = async (req, res, next) => {
     user.age = newAge;
     user.bio = newBio;
     user.gender = newGender;
-    user.gymMembership = gymMembership;
-    user.athleteTypes = athleteTypes;
+    user.gymMembership = gymMembership || [];
+    user.athleteTypes = athleteTypes || [];
     user.address = formalAddress;
     user.location = coordinates;
 
