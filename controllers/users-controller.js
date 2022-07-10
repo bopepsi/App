@@ -214,10 +214,10 @@ const editUserProfile = async (req, res, next) => {
         newGender = gender;
     }
     let newAge;
-    if (!age || age < 0) {
-        newAge = 0;
-    } else {
+    if (age > 0 ) {
         newAge = age;
+    } else {
+        newAge = 0;
     }
 
     user.name = name;
