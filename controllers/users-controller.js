@@ -4,6 +4,7 @@ const HttpError = require('../models/http-error');
 const User = require('../models/user');
 const { getCoordsForAddress } = require('../util/location');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 
 const getAllUsers = async (req, res, next) => {
     let users;
@@ -88,18 +89,18 @@ const signup = async (req, res, next) => {
         formalAddress = result.formalAddress;
     } catch (error) {
         return next(error);
-    }
+    };
 
     let existingUser;
     try {
         existingUser = await User.findOne({ email: email });
     } catch (error) {
         return next(new HttpError('Oops, something went wrong when finding exising user', 500));
-    }
+    };
 
     if (existingUser) {
         return next(new HttpError('User already exists, login instead.', 422));
-    }
+    };
 
     const newUser = new User({ name, email, password: hashedPassword, age, bio, gender, gymMembership, athleteTypes, image, likes, backgroundImage, address: formalAddress, location: coordinates, appointments, invitations, reviews, likedPosts, posts, collections, follows, followers, comments, unreadNotifications, unreadComments });
 
@@ -108,9 +109,17 @@ const signup = async (req, res, next) => {
     } catch (error) {
         console.log(error)
         return next(new HttpError('Oops, something went wrong when creating user', 500));
-    }
+    };
 
-    res.status(201).json({ user: newUser.toObject({ getters: true }) });
+    let token;
+    try {
+        token = jwt.sign({ userId: newUser.id, name: newUser.name, email: newUser.email }, process.env.SUPER_SECRET, { expiresIn: '1h' });
+    } catch (error) {
+        return next(new HttpError('Oops, something went wrong when creating user', 500));
+    };
+
+    res.status(201).json({ user: newUser.toObject({ getters: true }), token: token });
+
 }
 
 const login = async (req, res, next) => {
@@ -132,13 +141,20 @@ const login = async (req, res, next) => {
         isValidPassword = await bcrypt.compare(password, existingUser.password);
     } catch (error) {
         return next(new HttpError('Oops something went wrong', 500));
-    }
+    };
 
     if (!isValidPassword) {
         return next(new HttpError('Invalid credentials', 401));
-    }
+    };
 
-    return res.status(200).json({ message: 'Logged in', user: existingUser.toObject({ getters: true }) });
+    let token;
+    try {
+        token = jwt.sign({ userId: existingUser.id, name: existingUser.name, email: existingUser.email }, process.env.SUPER_SECRET, { expiresIn: '1h' });
+    } catch (error) {
+        return next(new HttpError('Oops, something went wrong', 500));
+    };
+
+    return res.status(200).json({ message: 'Logged in', user: existingUser.toObject({ getters: true }), token: token });
 
 }
 
