@@ -50,7 +50,9 @@ const signup = async (req, res, next) => {
         return next(new HttpError('Please check your inputs', 422));
     }
 
-    const { name, email, password, image, age, address } = req.body;
+    const { name, email, password, age, address } = req.body;
+
+    let image = req.file.path;
 
     let bio = 'nothing yet';
     let gender = 'unknown';
@@ -96,6 +98,7 @@ const signup = async (req, res, next) => {
     try {
         await newUser.save();
     } catch (error) {
+        console.log(error)
         return next(new HttpError('Oops, something went wrong when creating user', 500));
     }
 

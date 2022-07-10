@@ -3,6 +3,8 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
+const fs = require('fs');
+const path = require('path');
 
 const postsRoutes = require('./routes/posts-routes');
 const userRoutes = require('./routes/user-routes');
@@ -16,6 +18,11 @@ const app = express();
 
 //? Parsing incoming body and extract json data
 app.use(bodyParser.json());
+
+
+//* Provide access to images, express.static() ==> just return it, don't process.
+app.use('/uploads/avatars', express.static(path.join('uploads', 'avatars')));
+app.use('/uploads/posts', express.static(path.join('uploads', 'posts')));
 
 //* CORES
 app.use((req, res, next) => {
@@ -38,6 +45,11 @@ app.use((req, res, next) => {
 });
 
 app.use((error, req, res, next) => {
+
+    if (req.file) {
+        fs.unlink(req.file.path, (err) => { console.log(err) });
+    }
+
     if (res.headerSent) {
         return next(error);
     }
