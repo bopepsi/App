@@ -68,14 +68,16 @@ const signup = async (req, res, next) => {
 
     const { name, email, password, age, address } = req.body;
 
-    let image = req.file.path;
+    let image = process.env.SERVER_URL + req.file.path;
 
-    let bio = 'nothing yet';
+
+
+    let bio = 'No bio yet';
     let gender = 'unknown';
     let gymMembership = [];
     let athleteTypes = [];
     let likes = 0;
-    let backgroundImage = 'aFilePath';
+    let backgroundImage = `${process.env.SERVER_URL}uploads/default/background.jpg`;
     let appointments = [];
     let invitations = [];
     let reviews = [];
@@ -174,7 +176,7 @@ const login = async (req, res, next) => {
 
 const editUserProfile = async (req, res, next) => {
     let uId = req.params.uid;
-    const { name, password, age, bio, gender, gymMembership, athleteTypes, image, backgroundImage, address } = req.body;
+    const { name, password, age, bio, gender, gymMembership, athleteTypes, backgroundImage, address } = req.body;
     let user;
     try {
         user = await User.findById(uId);
@@ -203,6 +205,12 @@ const editUserProfile = async (req, res, next) => {
         return next(error);
     }
 
+    if (req.file) {
+        let imageURL = process.env.SERVER_URL + req.file.path;
+        user.image = imageURL;
+    }
+
+
     user.name = name;
     user.password = hashedPassword;
     user.age = age;
@@ -210,7 +218,6 @@ const editUserProfile = async (req, res, next) => {
     user.gender = gender;
     user.gymMembership = gymMembership;
     user.athleteTypes = athleteTypes;
-    user.image = image;
     user.backgroundImage = backgroundImage;
     user.address = formalAddress;
     user.location = coordinates;

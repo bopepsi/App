@@ -23,6 +23,7 @@ app.use(bodyParser.json());
 //* Provide access to images, express.static() ==> just return it, don't process.
 app.use('/uploads/avatars', express.static(path.join('uploads', 'avatars')));
 app.use('/uploads/posts', express.static(path.join('uploads', 'posts')));
+app.use('/uploads/default', express.static(path.join('uploads', 'default')));
 
 //* CORES
 app.use((req, res, next) => {
