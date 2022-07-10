@@ -3,6 +3,7 @@ const { default: mongoose } = require('mongoose');
 const HttpError = require('../models/http-error');
 const User = require('../models/user');
 const { getCoordsForAddress } = require('../util/location');
+const bcrypt = require('bcryptjs');
 
 const getAllUsers = async (req, res, next) => {
     let users;
@@ -72,6 +73,13 @@ const signup = async (req, res, next) => {
     let unreadNotifications = 0;
     let unreadComments = [];
 
+    let hashedPassword;
+    try {
+        hashedPassword = await bcrypt.hash(password, 12);
+    } catch (error) {
+        return next(new HttpError('Could not create user.'), 500);
+    };
+
     let coordinates;
     let formalAddress;
     try {
@@ -93,7 +101,7 @@ const signup = async (req, res, next) => {
         return next(new HttpError('User already exists, login instead.', 422));
     }
 
-    const newUser = new User({ name, email, password, age, bio, gender, gymMembership, athleteTypes, image, likes, backgroundImage, address: formalAddress, location: coordinates, appointments, invitations, reviews, likedPosts, posts, collections, follows, followers, comments, unreadNotifications, unreadComments });
+    const newUser = new User({ name, email, password: hashedPassword, age, bio, gender, gymMembership, athleteTypes, image, likes, backgroundImage, address: formalAddress, location: coordinates, appointments, invitations, reviews, likedPosts, posts, collections, follows, followers, comments, unreadNotifications, unreadComments });
 
     try {
         await newUser.save();
@@ -113,12 +121,22 @@ const login = async (req, res, next) => {
         existingUser = await User.findOne({ email: email });
     } catch (error) {
         return next(new HttpError('Oops, something went wrong when finding exising user', 500));
+    };
+
+    if (!existingUser) {
+        return next(new HttpError('Invalid credentials', 401));
+    };
+
+    let isValidPassword = false;
+    try {
+        isValidPassword = await bcrypt.compare(password, existingUser.password);
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong', 500));
     }
 
-    if (!existingUser || existingUser.password !== password) {
+    if (!isValidPassword) {
         return next(new HttpError('Invalid credentials', 401));
     }
-
 
     return res.status(200).json({ message: 'Logged in', user: existingUser.toObject({ getters: true }) });
 
@@ -132,11 +150,18 @@ const editUserProfile = async (req, res, next) => {
         user = await User.findById(uId);
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
-    }
+    };
 
     if (!user) {
         return next(new HttpError('Could not find user.', 404));
-    }
+    };
+
+    let hashedPassword;
+    try {
+        hashedPassword = await bcrypt.hash(password, 12);
+    } catch (error) {
+        return next(new HttpError('Could not create user.'), 500);
+    };
 
     let coordinates;
     let formalAddress;
@@ -149,7 +174,7 @@ const editUserProfile = async (req, res, next) => {
     }
 
     user.name = name;
-    user.password = password;
+    user.password = hashedPassword;
     user.age = age;
     user.bio = bio;
     user.gender = gender;
