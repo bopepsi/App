@@ -70,10 +70,8 @@ const signup = async (req, res, next) => {
 
     let image = process.env.SERVER_URL + req.file.path;
 
-
-
     let bio = 'No bio yet';
-    let gender = 'unknown';
+    let gender = 'Unknown';
     let gymMembership = [];
     let athleteTypes = [];
     let likes = 0;
@@ -129,7 +127,7 @@ const signup = async (req, res, next) => {
 
     let token;
     try {
-        token = jwt.sign({ userId: newUser.id, name: newUser.name, email: newUser.email }, process.env.SUPER_SECRET, { expiresIn: '1h' });
+        token = jwt.sign({ userId: newUser.id, email: newUser.email }, process.env.SUPER_SECRET, { expiresIn: '1h' });
     } catch (error) {
         return next(new HttpError('Oops, something went wrong when creating user', 500));
     };
@@ -165,7 +163,7 @@ const login = async (req, res, next) => {
 
     let token;
     try {
-        token = jwt.sign({ userId: existingUser.id, name: existingUser.name, email: existingUser.email }, process.env.SUPER_SECRET, { expiresIn: '1h' });
+        token = jwt.sign({ userId: existingUser.id, email: existingUser.email }, process.env.SUPER_SECRET, { expiresIn: '1h' });
     } catch (error) {
         return next(new HttpError('Oops, something went wrong', 500));
     };
@@ -176,7 +174,7 @@ const login = async (req, res, next) => {
 
 const editUserProfile = async (req, res, next) => {
     let uId = req.params.uid;
-    const { name, password, age, bio, gender, gymMembership, athleteTypes, backgroundImage, address } = req.body;
+    const { name, age, bio, gender, gymMembership, athleteTypes, address } = req.body;
     let user;
     try {
         user = await User.findById(uId);
@@ -186,13 +184,6 @@ const editUserProfile = async (req, res, next) => {
 
     if (!user) {
         return next(new HttpError('Could not find user.', 404));
-    };
-
-    let hashedPassword;
-    try {
-        hashedPassword = await bcrypt.hash(password, 12);
-    } catch (error) {
-        return next(new HttpError('Could not create user.'), 500);
     };
 
     let coordinates;
@@ -210,15 +201,31 @@ const editUserProfile = async (req, res, next) => {
         user.image = imageURL;
     }
 
+    let newBio;
+    if (!bio || bio.length === 0) {
+        newBio = 'No bio yet.'
+    } else {
+        newBio = bio;
+    }
+    let newGender;
+    if (!gender || gender.trim().length === 0) {
+        newGender = 'Unknow';
+    } else {
+        newGender = gender;
+    }
+    let newAge;
+    if (!age || age < 0) {
+        newAge = 0;
+    } else {
+        newAge = age;
+    }
 
     user.name = name;
-    user.password = hashedPassword;
-    user.age = age;
-    user.bio = bio;
-    user.gender = gender;
+    user.age = newAge;
+    user.bio = newBio;
+    user.gender = newGender;
     user.gymMembership = gymMembership;
     user.athleteTypes = athleteTypes;
-    user.backgroundImage = backgroundImage;
     user.address = formalAddress;
     user.location = coordinates;
 
@@ -228,7 +235,14 @@ const editUserProfile = async (req, res, next) => {
         return next(new HttpError('Oops something went wrong.', 500));
     }
 
-    res.status(201).json({ message: 'User profile updated', user: user.toObject({ getters: true }) })
+    let token;
+    try {
+        token = jwt.sign({ userId: user.id, email: user.email }, process.env.SUPER_SECRET, { expiresIn: '1h' });
+    } catch (error) {
+        return next(new HttpError('Oops, something went wrong when editing user profile', 500));
+    };
+
+    res.status(201).json({ message: 'User profile updated', user: user.toObject({ getters: true }), token: token })
 
 }
 
