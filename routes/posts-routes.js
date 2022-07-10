@@ -1,5 +1,6 @@
 const express = require('express');
 const { check } = require('express-validator');
+const fileUploadPost = require('../middleware/post-img-upload');
 
 const { getPostById, getPostsByUserId, createPost, updatePost, deletePost, likeOrDislkePost, addOrRemovePostFromCollection, addComment, addPostToLikes, removePostFromLikes, dislikePost } = require('../controllers/posts-controller');
 
@@ -10,9 +11,9 @@ router.get('/:pid', getPostById);
 router.get('/user/:uid', getPostsByUserId);
 
 //* Check req body, then handler error in the controller if any
-router.post('/', [check('title').not().isEmpty(), check('description').isLength({ min: 1 }), check('image').not().isEmpty()], createPost);
+router.post('/', fileUploadPost.single('image'), [check('title').not().isEmpty(), check('description').isLength({ min: 1 })], createPost);
 
-router.patch('/:pid', [check('title').not().isEmpty(), check('description').isLength({ min: 1 }), check('image').not().isEmpty()], updatePost);
+router.patch('/:pid', fileUploadPost.single('image'), [check('title').not().isEmpty(), check('description').isLength({ min: 1 })], updatePost);
 
 router.patch('/dislike/:pid', dislikePost);
 

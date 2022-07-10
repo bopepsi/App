@@ -44,9 +44,14 @@ const createPost = async (req, res, next) => {
         console.log(errors);
         return next(new HttpError("Invalid inputs passed, please check your data.", 422));
     }
-    let { title, description, tags, image, address, creator } = req.body;
+    let { title, description, tags, address, creator } = req.body;
+
+    let image = process.env.SERVER_URL + req.file.path;
+
     const likes = 0, dislikes = 0, collections = 0, comments = [];
+
     tags = tags ? tags : [];
+    
     let coordinates;
     let formalAddress;
     try {
