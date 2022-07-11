@@ -5,12 +5,26 @@ const Post = require('../models/post');
 const User = require('../models/user');
 const { default: mongoose } = require('mongoose');
 
+const getPosts = async (req, res, next) => {
+    let posts;
+    try {
+        posts = await Post.find().populate('creator');
+    } catch (error) {
+        return next(new HttpError('Something went wrong', 500));
+    };
+    if (!posts) {
+        const error = new HttpError('Could not fetch posts.', 404);
+        return next(error);
+    };
+    res.json({ posts: posts.map(p => p.toObject({ getters: true })) });
+};
+
 const getPostById = async (req, res, next) => {
     const pId = req.params.pid;
     console.log('This is postId in req: ', pId);
     let post;
     try {
-        post = await Post.findById(pId).exec();
+        post = await Post.findById(pId).populate('creator');
     } catch (error) {
         return next(new HttpError('Something went wrong', 500));
     };
@@ -26,7 +40,7 @@ const getPostsByUserId = async (req, res, next) => {
     console.log('This is userId in req: ', uId);
     let posts;
     try {
-        posts = await Post.find({ creator: uId }).exec();
+        posts = await Post.find({ creator: uId }).populate('creator');
     } catch (error) {
         return next(new HttpError('Something went wrong', 500));
     };
@@ -51,7 +65,7 @@ const createPost = async (req, res, next) => {
     const likes = 0, dislikes = 0, collections = 0, comments = [];
 
     tags = tags ? tags : [];
-    
+
     let coordinates;
     let formalAddress;
     try {
@@ -276,6 +290,7 @@ const deletePost = async (req, res, next) => {
 }
 
 module.exports = {
+    getPosts,
     getPostById,
     getPostsByUserId,
     createPost,

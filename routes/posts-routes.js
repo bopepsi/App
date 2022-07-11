@@ -2,9 +2,11 @@ const express = require('express');
 const { check } = require('express-validator');
 const fileUploadPost = require('../middleware/post-img-upload');
 
-const { getPostById, getPostsByUserId, createPost, updatePost, deletePost, likeOrDislkePost, addOrRemovePostFromCollection, addComment, addPostToLikes, removePostFromLikes, dislikePost } = require('../controllers/posts-controller');
+const { getPostById, getPostsByUserId, createPost, updatePost, deletePost, likeOrDislkePost, addOrRemovePostFromCollection, addComment, addPostToLikes, removePostFromLikes, dislikePost, getPosts } = require('../controllers/posts-controller');
 
 const router = express.Router();
+
+router.get('/', getPosts)
 
 router.get('/:pid', getPostById);
 

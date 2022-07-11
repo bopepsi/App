@@ -21,14 +21,16 @@ const getUserById = async (req, res, next) => {
     let userId = req.params.uid;
     let user;
     try {
-        user = await User.findById(userId).populate('posts');
+        // user = await User.findById(userId).populate('posts collections likedPosts')
+        user = await User.findById(userId).populate([{ path: 'posts', model: 'Post', populate: { path: 'creator', mode: 'User' } }, { path: 'likedPosts', model: 'Post', populate: { path: 'creator', mode: 'User' } }, { path: 'collections', model: 'Collection' }]);
     } catch (error) {
         return next(new HttpError('Oops something went wrong'), 500)
     };
     if (!user) {
         return next(new HttpError('User not exist'), 404);
     };
-    res.status(201).json({ user: user.toObject({ getters: true }), posts: user.posts.map(p => p.toObject({ getters: true })) });
+    res.status(201).json({ user: user.toObject({ getters: true }) });
+    // res.status(201).json({ user: user.toObject({ getters: true }), likedPosts: user.likedPosts.map(p => p.toObject({ getters: true })), posts: user.posts.map(p => p.toObject({ getters: true })) });
 }
 
 const getUserFollowings = async (req, res, next) => {
@@ -214,7 +216,7 @@ const editUserProfile = async (req, res, next) => {
         newGender = gender;
     }
     let newAge;
-    if (age > 0 ) {
+    if (age > 0) {
         newAge = age;
     } else {
         newAge = 0;
