@@ -1,8 +1,10 @@
 const express = require('express');
-const { getPostsByCid, getCollectionsByUid, createCollection, addPostToCollection, removePostFromCollection, editCollection, deleteCollection } = require('../controllers/collections-controller');
+const { getPostsByCid, getCollectionsByUid,getCollectionsWithPostsIdsByUid, createCollection, addPostToCollection, removePostFromCollection, editCollection, deleteCollection } = require('../controllers/collections-controller');
 const router = express.Router();
 
 router.get('/:uid', getCollectionsByUid);
+
+router.get('/postids/:uid', getCollectionsWithPostsIdsByUid);
 
 router.get('/posts/:cid', getPostsByCid);
 

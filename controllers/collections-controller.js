@@ -44,6 +44,24 @@ const getCollectionsByUid = async (req, res, next) => {
     // };
     res.status(201).json({ collections: collections.map(c => c.toObject({ getters: true })) });
 };
+
+const getCollectionsWithPostsIdsByUid = async (req, res, next) => {
+    const uId = req.params.uid;
+    //* find user then populate collections
+
+    let collections;
+    try {
+        collections = await Collection.find({ creator: uId });
+    } catch (error) {
+        return next(new HttpError('Oops something is wrong.', 500));
+    }
+
+    if (!collections) {
+        return next(new HttpError('Could not find Collection by User.', 404));
+    }
+    res.status(201).json({ collections: collections.map(c => c.toObject({ getters: true })) });
+};
+
 //! fix creator later
 const createCollection = async (req, res, next) => {
     const { title, creator } = req.body;
@@ -207,6 +225,7 @@ const deleteCollection = async (req, res, next) => {
 module.exports = {
     getPostsByCid,
     getCollectionsByUid,
+    getCollectionsWithPostsIdsByUid,
     createCollection,
     addPostToCollection,
     removePostFromCollection,

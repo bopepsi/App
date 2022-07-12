@@ -272,6 +272,7 @@ const followUser = async (req, res, next) => {
         return next(new HttpError('Could not find creator user.', 422));
     }
     //* Update followings and followers then save
+    console.log(user, thisUser);
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
@@ -281,6 +282,9 @@ const followUser = async (req, res, next) => {
         await user.save({ session: sess });
         await sess.commitTransaction();
     } catch (error) {
+        console.log(error.message);
+        console.log('ok');
+        
         return next(new HttpError('Oops, follow user failed.', 500));
     };
 
@@ -320,6 +324,8 @@ const unFollowUser = async (req, res, next) => {
         await user.save({ session: sess });
         await sess.commitTransaction();
     } catch (error) {
+        console.log(error.message);
+        console.log('ok');
         return next(new HttpError('Oops, follow user failed.', 500));
     };
 
