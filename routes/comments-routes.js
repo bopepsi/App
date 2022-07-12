@@ -1,21 +1,24 @@
 const express = require('express');
-const { getCommentsByUserId, getCommentsByPostId, replyToComment, getCommentsByCommentId, createCommentOnPost, likeAComment, unLikeAComment, resetUnreadCommentsAndNotifications } = require('../controllers/comments-controller');
+const { getUnreadCommentsByUserId, getCommentsByUserId, getCommentsByPostId, replyToComment, getCommentsByCommentId, createCommentOnPost, likeAComment, unLikeAComment, resetUnreadCommentsAndNotifications } = require('../controllers/comments-controller');
 const router = express.Router();
+const checkAuth = require('../middleware/check-auth');
 
-router.get('/user/:uid', getCommentsByUserId);
+router.get('/unread/:uid', checkAuth, getUnreadCommentsByUserId)
+
+router.get('/user/:uid', checkAuth, getCommentsByUserId);
 
 router.get('/post/:pid', getCommentsByPostId);
 
 router.get('/reply/:cid', getCommentsByCommentId);
 
-router.post('/post/:pid', createCommentOnPost);
+router.post('/post/:pid', checkAuth, createCommentOnPost);
 
-router.post('/reply/:cid', replyToComment);
+router.post('/reply/:cid', checkAuth, replyToComment);
 
-router.patch('/like/:cid', likeAComment);
+router.patch('/like/:cid', checkAuth,likeAComment);
 
-router.patch('/unlike/:cid', unLikeAComment);
+router.patch('/unlike/:cid',checkAuth, unLikeAComment);
 
-router.patch('/reset-unread-comments/:uid', resetUnreadCommentsAndNotifications);
+router.patch('/reset-unread-comments/:uid',checkAuth, resetUnreadCommentsAndNotifications);
 
 module.exports = router;

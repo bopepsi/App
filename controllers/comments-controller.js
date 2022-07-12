@@ -4,6 +4,21 @@ const Comment = require('../models/comment');
 const HttpError = require('../models/http-error');
 const { default: mongoose } = require('mongoose');
 
+const getUnreadCommentsByUserId = async (req, res, next) => {
+    let userId = req.params.uid;
+    //* get user then populate comments and return json data
+    let user;
+    try {
+        user = await User.findById(userId).populate({ path: 'unreadComments', model: 'Comment', populate: { path: 'creator', model: 'User' } });
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    };
+    if (!user) {
+        return next(new HttpError('Could not find user.', 422));
+    };
+
+    res.status(201).json({ comments: user.unreadComments.map(c => c.toObject({ getters: true })) });
+}
 
 const getCommentsByUserId = async (req, res, next) => {
     let userId = req.params.uid;
@@ -214,6 +229,7 @@ const resetUnreadCommentsAndNotifications = async (req, res, next) => {
 }
 
 module.exports = {
+    getUnreadCommentsByUserId,
     getCommentsByUserId,
     getCommentsByPostId,
     getCommentsByCommentId,
