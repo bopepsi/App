@@ -140,7 +140,7 @@ const addPostToLikes = async (req, res, next) => {
     //* find post
     let post;
     try {
-        post = await Post.findById(postId);
+        post = await Post.findById(postId).populate('likedBy');
     } catch (error) {
         return next(new HttpError('Something went wrong when fecthing post', 500));
     };
@@ -163,6 +163,7 @@ const addPostToLikes = async (req, res, next) => {
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
+        post.likedBy.push(user);
         await post.save({ session: sess });
         user.likedPosts.push(post);
         await user.save({ session: sess });
@@ -181,7 +182,7 @@ const removePostFromLikes = async (req, res, next) => {
     //* find post
     let post;
     try {
-        post = await Post.findById(postId);
+        post = await Post.findById(postId).populate('likedBy');
     } catch (error) {
         return next(new HttpError('Something went wrong when fecthing post', 500));
     };
@@ -204,6 +205,7 @@ const removePostFromLikes = async (req, res, next) => {
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
+        post.likedBy.pull(user);
         await post.save({ session: sess });
         user.likedPosts.pull(post);
         await user.save({ session: sess });

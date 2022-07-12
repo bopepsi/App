@@ -8,6 +8,7 @@ const postSchema = new Schema({
     tags: [{ type: String, required: true }],
     image: { type: String, required: true },
     likes: { type: Number, required: true },
+    likedBy: [{ type: mongoose.Types.ObjectId, required: true, ref: "User" }],
     dislikes: { type: Number, required: true },
     collections: { type: Number, required: true },
     address: { type: String, required: true },
