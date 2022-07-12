@@ -51,7 +51,7 @@ const getUserFollowers = async (req, res, next) => {
     const uId = req.params.uid;
     let user;
     try {
-        user = await User.findById(uId).populate('follows');
+        user = await User.findById(uId).populate('followers');
     } catch (error) {
         return next(new HttpError('Oops something went wrong', 500));
     }
