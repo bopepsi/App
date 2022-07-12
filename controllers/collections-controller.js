@@ -4,19 +4,45 @@ const User = require('../models/user');
 const Post = require('../models/post');
 const HttpError = require('../models/http-error');
 
+const getPostsByCid = async (req, res, next) => {
+    const cId = req.params.cid;
+    let collection;
+    try {
+        collection = await Collection.findById(cId).populate('posts');
+    } catch (error) {
+        return next(new HttpError('Oops something is wrong.', 500));
+    }
+
+    if (!collection) {
+        return next(new HttpError('Could not find Collection by User.', 404));
+    }
+    res.status(201).json({ posts: collection.posts.map(c => c.toObject({ getters: true })) });
+}
+
 const getCollectionsByUid = async (req, res, next) => {
     const uId = req.params.uid;
     //* find user then populate collections
-    let user;
+
+    let collections;
     try {
-        user = await User.findById(uId).populate('collections');
+        collections = await Collection.find({ creator: uId }).populate('posts');
     } catch (error) {
         return next(new HttpError('Oops something is wrong.', 500));
-    };
-    if (!user) {
-        return next(new HttpError('Could not find user.', 404));
-    };
-    res.status(201).json({ collections: user.collections.map(c => c.toObject({ getters: true })) });
+    }
+
+    if (!collections) {
+        return next(new HttpError('Could not find Collection by User.', 404));
+    }
+    // let user;
+    // try {
+    // } catch (error) {
+    //     user = await User.findById(uId).populate('collections');
+    //     return next(new HttpError('Oops something is wrong.', 500));
+    // };
+    // if (!user) {
+    //     return next(new HttpError('Could not find user.', 404));
+    // };
+    res.status(201).json({ collections: collections.map(c => c.toObject({ getters: true })) });
 };
 //! fix creator later
 const createCollection = async (req, res, next) => {
@@ -164,11 +190,12 @@ const deleteCollection = async (req, res, next) => {
     if (!collection) {
         return next(new HttpError('Could not find collection.', 404));
     };
+    console.log(collection);
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
         await collection.remove({ session: sess });
-        collection.creator.collections.pull(post);
+        collection.creator.collections.pull(collection);
         await collection.creator.save({ session: sess });
         await sess.commitTransaction();
     } catch (error) {
@@ -178,6 +205,7 @@ const deleteCollection = async (req, res, next) => {
 }
 
 module.exports = {
+    getPostsByCid,
     getCollectionsByUid,
     createCollection,
     addPostToCollection,
