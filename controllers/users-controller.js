@@ -22,7 +22,7 @@ const getUserById = async (req, res, next) => {
     let user;
     try {
         // user = await User.findById(userId).populate('posts collections likedPosts')
-        user = await User.findById(userId).populate([{ path: 'posts', model: 'Post', populate: { path: 'creator', mode: 'User' } }, { path: 'likedPosts', model: 'Post', populate: { path: 'creator', mode: 'User' } }, { path: 'collections', model: 'Collection' }]);
+        user = await User.findById(userId).populate([{ path: 'posts', model: 'Post', populate: { path: 'creator', model: 'User' } }, { path: 'likedPosts', model: 'Post', populate: { path: 'creator', model: 'User' } }, { path: 'collections', model: 'Collection' }]);
     } catch (error) {
         return next(new HttpError('Oops something went wrong'), 500)
     };

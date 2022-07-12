@@ -20,13 +20,13 @@ const getCommentsByUserId = async (req, res, next) => {
 
     res.status(201).json({ comments: user.comments.map(c => c.toObject({ getters: true })) });
 }
-
+// post = await Post.findById(pId).populate([{ path: 'creator', model: 'User' }, { path: 'comments', model: 'Comment', populate: { path: 'creator', model: 'User' } }])
 const getCommentsByPostId = async (req, res, next) => {
     let postId = req.params.pid;
     //* get post then populate comments and return json data
     let post;
     try {
-        post = await Post.findById(postId).populate('comments');
+        post = await Post.findById(postId).populate({ path: 'comments', model: 'Comment', populate: { path: 'creator', model: 'User' } });
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
     };
@@ -42,7 +42,7 @@ const getCommentsByCommentId = async (req, res, next) => {
     //* get comment then populate comments and return json data
     let comment;
     try {
-        comment = await Comment.findById(commentId).populate('replies');
+        comment = await Comment.findById(commentId).populate({ path: 'replies', model: 'Comment', populate: { path: 'creator', model: 'User' } });
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
     };
@@ -90,7 +90,7 @@ const createCommentOnPost = async (req, res, next) => {
     } catch (error) {
         return next(new HttpError('Oops, creating comment failed.', 500));
     };
-    res.status(201).json({ message: 'Comments added.', comments: post.comments.map(c => c.toObject({ getters: true })) });
+    res.status(201).json({ message: 'Comments added.', comment: newComment.toObject({ getters: true }) });
 }
 
 const replyToComment = async (req, res, next) => {
@@ -107,7 +107,7 @@ const replyToComment = async (req, res, next) => {
     //* find comment
     let comment;
     try {
-        comment = await Comment.findById(commentId).populate('creator');
+        comment = await Comment.findById(commentId).populate('creator replies');
     } catch {
         return next(new HttpError('Oops something went wrong.', 500));
     }

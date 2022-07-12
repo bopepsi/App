@@ -24,7 +24,7 @@ const getPostById = async (req, res, next) => {
     console.log('This is postId in req: ', pId);
     let post;
     try {
-        post = await Post.findById(pId).populate('creator');
+        post = await Post.findById(pId).populate([{ path: 'creator', model: 'User' }, { path: 'comments', model: 'Comment', populate: { path: 'creator', model: 'User' } }])
     } catch (error) {
         return next(new HttpError('Something went wrong', 500));
     };
