@@ -140,7 +140,7 @@ const addPostToLikes = async (req, res, next) => {
     //* find post
     let post;
     try {
-        post = await Post.findById(postId).populate('likedBy');
+        post = await Post.findById(postId).populate('likedBy creator');
     } catch (error) {
         return next(new HttpError('Something went wrong when fecthing post', 500));
     };
@@ -151,6 +151,8 @@ const addPostToLikes = async (req, res, next) => {
 
     //* add post to user's likedPosts
     post.likes = post.likes + 1;
+    post.creator.likes = post.creator.likes + 1;
+    console.log(post);
     let user;
     try {
         user = await User.findById(userId).populate('likedPosts');
@@ -166,6 +168,7 @@ const addPostToLikes = async (req, res, next) => {
         post.likedBy.push(user);
         await post.save({ session: sess });
         user.likedPosts.push(post);
+        await post.creator.save({ session: sess });
         await user.save({ session: sess });
         await sess.commitTransaction();
     } catch (error) {
@@ -182,7 +185,7 @@ const removePostFromLikes = async (req, res, next) => {
     //* find post
     let post;
     try {
-        post = await Post.findById(postId).populate('likedBy');
+        post = await Post.findById(postId).populate('likedBy creator');
     } catch (error) {
         return next(new HttpError('Something went wrong when fecthing post', 500));
     };
@@ -193,6 +196,7 @@ const removePostFromLikes = async (req, res, next) => {
 
     //* remove post from user's likedPosts
     post.likes = post.likes - 1;
+    post.creator.likes = post.creator.likes - 1;
     let user;
     try {
         user = await User.findById(userId).populate('likedPosts');
@@ -208,6 +212,7 @@ const removePostFromLikes = async (req, res, next) => {
         post.likedBy.pull(user);
         await post.save({ session: sess });
         user.likedPosts.pull(post);
+        await post.creator.save({ session: sess });
         await user.save({ session: sess });
         await sess.commitTransaction();
     } catch (error) {
