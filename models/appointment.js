@@ -14,8 +14,8 @@ const appointmentSchema = new Schema({
     },
     appointmentDate: { type: Date, required: true },
     pending: { type: Boolean, required: true },
-    recieverAccepted: { type: Boolean, required: true },
-    recieverRejected: { type: Boolean, required: true },
+    recieverAccepted: { type: Boolean, required: false },
+    recieverRejected: { type: Boolean, required: false },
     reviews: [{ type: mongoose.Types.ObjectId, required: true, ref: "Review" }],
     date: { type: Date, default: Date.now }
 });

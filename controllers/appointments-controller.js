@@ -9,7 +9,7 @@ const getAppointmentsByUserId = async (req, res, next) => {
     // let appointments;
     let user;
     try {
-        user = await User.findById(userId).populate({ path: 'appointments', model: 'Appointment', populate: { path: 'reciever', model: 'User' } });
+        user = await User.findById(userId).populate({ path: 'appointments', model: 'Appointment', populate: [{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }] });
         // appointments = await Appointment.find({ creator: userId }).populate('reviews reciever');
         // user = await User.findById(userId).populate('appointments reviews');
     } catch (error) {
@@ -39,7 +39,7 @@ const getInvitationsByUserId = async (req, res, next) => {
     let userId = req.params.uid;
     let user;
     try {
-        user = await User.findById(userId).populate({ path: 'invitations', model: 'Appointment', populate: { path: 'creator', model: 'User' } });
+        user = await User.findById(userId).populate({ path: 'invitations', model: 'Appointment', populate: [{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }] });
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
     };
@@ -167,7 +167,7 @@ const rejectInvitation = async (req, res, next) => {
     } catch (error) {
         return next(new HttpError('Oops, saving appointment failed.', 500));
     };
-    res.status(201).json({ message: "Invitation rejected."});
+    res.status(201).json({ message: "Invitation rejected." });
 }
 
 module.exports = {
