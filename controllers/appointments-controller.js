@@ -6,24 +6,40 @@ const { getCoordsForAddress } = require('../util/location');
 
 const getAppointmentsByUserId = async (req, res, next) => {
     let userId = req.params.uid;
+    // let appointments;
     let user;
     try {
-        user = await User.findById(userId).populate('appointments reviews');
+        user = await User.findById(userId).populate({ path: 'appointments', model: 'Appointment', populate: { path: 'reciever', model: 'User' } });
+        // appointments = await Appointment.find({ creator: userId }).populate('reviews reciever');
+        // user = await User.findById(userId).populate('appointments reviews');
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
     };
-    console.log(user);
     if (!user) {
         return next(new HttpError('User not exist.', 422));
     };
     res.json({ appointments: user.appointments.map(appo => appo.toObject({ getters: true })) });
 }
 
+const getAppointmentById = async (req, res, next) => {
+    let aid = req.params.aid;
+    let appointment;
+    try {
+        appointment = await Appointment.findById(aid).populate('creator reviews reciever');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    };
+    if (!appointment) {
+        return next(new HttpError('Appointments not exist.', 422));
+    };
+    res.json({ appointment: appointment.toObject({ getters: true }) });
+}
+// user = await User.findById(userId).populate([{ path: 'posts', model: 'Post', populate: { path: 'creator', model: 'User' } }, { path: 'likedPosts', model: 'Post', populate: { path: 'creator', model: 'User' } }, { path: 'collections', model: 'Collection' }]);
 const getInvitationsByUserId = async (req, res, next) => {
     let userId = req.params.uid;
     let user;
     try {
-        user = await User.findById(userId).populate('invitations');
+        user = await User.findById(userId).populate({ path: 'invitations', model: 'Appointment', populate: { path: 'creator', model: 'User' } });
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
     };
@@ -82,7 +98,8 @@ const acceptInvitation = async (req, res, next) => {
     const { userId, appointmentId } = req.body;
     let user;
     try {
-        user = await User.findById(userId).populate('invitations appointments');
+        user = await User.findById(userId);
+        // user = await User.findById(userId).populate('invitations appointments');
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
     };
@@ -97,20 +114,23 @@ const acceptInvitation = async (req, res, next) => {
         return next(new HttpError('Data not exist.', 422));
     };
     //* update user info, appoint info and save
+    console.log(user, appointment)
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
-        user.invitations.pull(appointmentId);
-        user.appointments.push(appointmentId);
+        user.invitations.pull(appointment);
+        user.appointments.push(appointment);
         appointment.recieverAccepted = true;
         appointment.pending = false;
-        await user.save();
-        await appointment.save();
+        // await user.invitations.save({ session: sess });
+        // await user.appointments.save({ session: sess })
+        await user.save({ session: sess });
+        await appointment.save({ session: sess });
         await sess.commitTransaction();
     } catch (error) {
         return next(new HttpError('Oops, saving appointment failed.', 500));
     };
-    res.status(201).json({ message: "Invitation accepted.", invitations: user.invitations.map(a => a.toObject({ getters: true })) });
+    res.status(201).json({ message: "Invitation accepted." });
 
 }
 
@@ -118,7 +138,7 @@ const rejectInvitation = async (req, res, next) => {
     const { userId, appointmentId } = req.body;
     let user;
     try {
-        user = await User.findById(userId).populate('invitations');
+        user = await User.findById(userId);
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
     };
@@ -136,20 +156,22 @@ const rejectInvitation = async (req, res, next) => {
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
-        user.invitations.pull(appointmentId);
+        user.invitations.pull(appointment);
         appointment.recieverAccepted = false;
         appointment.pending = false;
         appointment.recieverRejected = true;
-        await user.save();
-        await appointment.save();
+        // await user.invitations.save({ session: sess });
+        await user.save({ session: sess });
+        await appointment.save({ session: sess });
         await sess.commitTransaction();
     } catch (error) {
         return next(new HttpError('Oops, saving appointment failed.', 500));
     };
-    res.status(201).json({ message: "Invitation rejected.", invitations: user.invitations.map(a => a.toObject({ getters: true })) });
+    res.status(201).json({ message: "Invitation rejected."});
 }
 
 module.exports = {
+    getAppointmentById,
     getAppointmentsByUserId,
     getInvitationsByUserId,
     createAppointment,

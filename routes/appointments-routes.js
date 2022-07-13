@@ -1,8 +1,10 @@
 const express = require('express');
-const { getAppointmentsByUserId, createAppointment, acceptInvitation, rejectInvitation, getInvitationsByUserId } = require('../controllers/appointments-controller');
+const { getAppointmentsByUserId, createAppointment, acceptInvitation, rejectInvitation, getInvitationsByUserId,getAppointmentById } = require('../controllers/appointments-controller');
 const router = express.Router();
 
 router.get('/:uid', getAppointmentsByUserId);
+
+router.get('/appointment/:aid', getAppointmentById);
 
 router.get('/invitations/:uid', getInvitationsByUserId);
 
