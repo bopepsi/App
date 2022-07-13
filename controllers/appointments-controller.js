@@ -9,7 +9,11 @@ const getAppointmentsByUserId = async (req, res, next) => {
     // let appointments;
     let user;
     try {
-        user = await User.findById(userId).populate({ path: 'appointments', model: 'Appointment', populate: [{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }] });
+        // user = await User.findById(userId).populate({ path: 'appointments', model: 'Appointment', populate: [{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }] });
+
+        user = await User.findById(userId).populate(
+            { path: 'appointments', model: 'Appointment', populate: [{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }, { path: 'reviews', model: 'Review', populate: { path: 'creator', model: 'User' } }] });
+
         // appointments = await Appointment.find({ creator: userId }).populate('reviews reciever');
         // user = await User.findById(userId).populate('appointments reviews');
     } catch (error) {
