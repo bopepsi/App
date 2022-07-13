@@ -58,7 +58,7 @@ const getUserFollowers = async (req, res, next) => {
     if (!user) {
         return next(new HttpError('Could not find user.', 404));
     }
-    res.status(201).json({ followings: user.followers.map(item => item.toObject({ getters: true })) });
+    res.status(201).json({ followers: user.followers.map(item => item.toObject({ getters: true })) });
 }
 
 const signup = async (req, res, next) => {
