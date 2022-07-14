@@ -29,7 +29,8 @@ const getAppointmentById = async (req, res, next) => {
     let aid = req.params.aid;
     let appointment;
     try {
-        appointment = await Appointment.findById(aid).populate('creator reviews reciever');
+        // appointment = await Appointment.findById(aid).populate('creator reviews reciever');
+        appointment = await Appointment.findById(aid).populate([{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }, { path: 'reviews', model: 'Review', populate: { path: 'creator', model: 'User' } }]);
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
     };
