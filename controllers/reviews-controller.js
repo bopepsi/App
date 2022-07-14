@@ -5,8 +5,9 @@ const HttpError = require('../models/http-error');
 const { default: mongoose } = require('mongoose');
 
 const createReview = async (req, res, next) => {
-    let { creator, appointment, text, rating } = req.body;
-    if (!creator || !appointment || !rating) {
+    let { reciever, creator, appointment, text, rating } = req.body;
+    console.log(req.body);
+    if (!reciever || !creator || !appointment || !rating) {
         return next(new HttpError('Invalid inputs', 500));
     }
     //* find user
@@ -30,7 +31,7 @@ const createReview = async (req, res, next) => {
         return next(new HttpError('Could not find appointment.', 404));
     };
 
-    const newReview = new Review({ creator, appointment, rating, text });
+    const newReview = new Review({ creator, reciever, appointment, rating, text });
 
     try {
         const sess = await mongoose.startSession();
@@ -61,7 +62,22 @@ const getReviewForAppointmentById = async (req, res, next) => {
     res.status(201).json({ reviews: appointment.reviews.map(r => r.toObject({ getters: true })) });
 };
 
+const getReviewsByUserId = async (req, res, next) => {
+    let uId = req.params.uid;
+    let reviews;
+    try {
+        reviews = await Review.find({ reciever: uId }).populate('creator');
+    } catch (error) {
+        return next(new HttpError('Oops something went wrong.', 500));
+    };
+    if (!reviews) {
+        return next(new HttpError('Could not find reviews.', 404));
+    };
+    res.status(201).json({ reviews: reviews.map(r => r.toObject({ getters: true })) });
+}
+
 module.exports = {
     createReview,
     getReviewForAppointmentById,
+    getReviewsByUserId
 };
