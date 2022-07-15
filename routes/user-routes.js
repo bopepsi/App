@@ -3,12 +3,12 @@ const { check } = require('express-validator');
 const fileUpload = require('../middleware/avatar-upload');
 const checkAuth = require('../middleware/check-auth');
 
-const { signup, login, getUserFollowers, getUserFollowings, editUserProfile, getAllUsers, followUser, unFollowUser, getUserById } = require('../controllers/users-controller');
+const { signup, login, getUserFollowers, getUserFollowings, editUserProfile, getAllUsers, followUser, unFollowUser, getUserById, changeBackgroundImage, changeUserImage } = require('../controllers/users-controller');
 const router = express.Router();
 
 router.get('/', getAllUsers);
 
-router.get('/:uid',getUserById);
+router.get('/:uid', getUserById);
 
 router.get('/followers/:uid', getUserFollowers);
 
@@ -19,6 +19,12 @@ router.post('/signup', fileUpload.single('image'), [check('name').not().isEmpty(
 router.post('/login', login);
 
 router.patch('/:uid', fileUpload.single('image'), checkAuth, editUserProfile);
+
+//* Change background image
+router.patch('/background/:uid', fileUpload.single('image'), checkAuth, changeBackgroundImage);
+
+//* Change user image
+router.patch('/image/:uid', fileUpload.single('image'), checkAuth, changeUserImage);
 
 //* :uid is followed user id
 router.post('/follow/:uid', checkAuth, followUser);

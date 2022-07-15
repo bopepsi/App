@@ -284,7 +284,7 @@ const followUser = async (req, res, next) => {
     } catch (error) {
         console.log(error.message);
         console.log('ok');
-        
+
         return next(new HttpError('Oops, follow user failed.', 500));
     };
 
@@ -332,6 +332,63 @@ const unFollowUser = async (req, res, next) => {
     res.status(201).json({ message: 'Unfollow success.' });
 }
 
+const changeBackgroundImage = async (req, res, next) => {
+
+    let image = process.env.SERVER_URL + req.file.path;
+    const uId = req.params.uid;
+
+    let existingUser;
+    try {
+        existingUser = await User.findById(uId);
+    } catch (error) {
+        return next(new HttpError('Oops, something went wrong when finding exising user', 500));
+    };
+
+    if (!existingUser) {
+        return next(new HttpError('User not exists.', 422));
+    };
+
+    existingUser.backgroundImage = image;
+
+    try {
+        await existingUser.save();
+    } catch (error) {
+        console.log(error)
+        return next(new HttpError('Oops, something went wrong when saving image', 500));
+    };
+
+    res.status(201).json({ message: 'Suceess!' });
+}
+
+const changeUserImage = async (req, res, next) => {
+
+    let image = process.env.SERVER_URL + req.file.path;
+    const uId = req.params.uid;
+
+    let existingUser;
+    try {
+        existingUser = await User.findById(uId);
+    } catch (error) {
+        return next(new HttpError('Oops, something went wrong when finding exising user', 500));
+    };
+
+    if (!existingUser) {
+        return next(new HttpError('User not exists.', 422));
+    };
+
+    existingUser.image = image;
+    console.log(existingUser);
+
+    try {
+        await existingUser.save();
+    } catch (error) {
+        console.log(error)
+        return next(new HttpError('Oops, something went wrong when saving image', 500));
+    };
+
+    res.status(201).json({ message: 'Suceess!' });
+}
+
 module.exports = {
     signup,
     login,
@@ -342,4 +399,6 @@ module.exports = {
     editUserProfile,
     followUser,
     unFollowUser,
+    changeBackgroundImage,
+    changeUserImage
 }
