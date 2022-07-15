@@ -3,6 +3,7 @@ const { validationResult } = require('express-validator');
 const { getCoordsForAddress, getAddressForCoords } = require('../util/location');
 const Post = require('../models/post');
 const User = require('../models/user');
+const Tag = require('../models/tag');
 const { default: mongoose } = require('mongoose');
 
 const getPosts = async (req, res, next) => {
@@ -52,6 +53,39 @@ const getPostsByUserId = async (req, res, next) => {
     res.json({ posts: posts.map(post => post.toObject({ getters: true })) });
 };
 
+const getFollowingsPostByUserId = async (req, res, next) => {
+    const uId = req.params.uid;
+    let user;
+    try {
+        user = await User.findById(uId).populate([{ path: 'follows', model: 'User', populate: { path: 'posts', model: 'Post', populate: { path: 'creator', model: 'User' } } }]);
+    } catch (error) {
+        return next(new HttpError('Something went wrong', 500));
+    }
+    if (!user) {
+        const error = new Error('Could not find user.');
+        error.code = 404;
+        return next(error);
+    }
+    res.json({ user: user.toObject({ getters: true }) });
+}
+
+const getPostsByTag = async (req, res, next) => {
+    const tag = req.params.tag;
+    console.log(tag);
+    let existingTag;
+    try {
+        existingTag = await Tag.findOne({ text: tag }).populate({ path: 'posts', model: 'Post', populate: { path: 'creator', model: 'User' } });
+    } catch (error) {
+        return next(new HttpError('Something went wrong', 500));
+    }
+    if (!existingTag) {
+        return res.json({ posts: [] });
+    }
+    res.json({ posts: existingTag.posts.map(post => post.toObject({ getters: true })) });
+}
+
+const getNearbyPosts = async (req, res, next) => { }
+
 const createPost = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -59,12 +93,14 @@ const createPost = async (req, res, next) => {
         return next(new HttpError("Invalid inputs passed, please check your data.", 422));
     }
     let { title, description, tags, address, creator } = req.body;
+    console.log(req.body);
 
     let image = process.env.SERVER_URL + req.file.path;
 
     const likes = 0, dislikes = 0, collections = 0, comments = [];
 
-    tags = tags ? tags : [];
+    tags = tags ? tags.split(',') : [];
+    console.log(tags);
 
     let coordinates;
     let formalAddress;
@@ -88,7 +124,32 @@ const createPost = async (req, res, next) => {
         return next(new HttpError('Could not find user.', 404));
     }
 
-    console.log(user);
+    //* Find tag in Tag collection, if no tag, create new tag, if already has a tag, push post to the existing tag collection
+
+    console.log(tags);
+    if (tags && tags.length > 0) {
+
+        for (let tag of tags) {
+            console.log(tag)
+            let existingTag;
+            try {
+                existingTag = await Tag.findOne({ text: tag })
+            } catch (error) {
+                return next(new HttpError('Oops something is wrong.', 500));
+            }
+            console.log(!existingTag);
+            if (!existingTag) {
+                console.log('not exist')
+                const newTag = new Tag({ text: tag, posts: [] });
+                newTag.posts.push(createdPost);
+                await newTag.save();
+            }
+            else {
+                existingTag.posts.push(createdPost);
+                await existingTag.save();
+            }
+        };
+    }
 
     try {
         const sess = await mongoose.startSession();
@@ -300,6 +361,9 @@ module.exports = {
     getPosts,
     getPostById,
     getPostsByUserId,
+    getPostsByTag,
+    getNearbyPosts,
+    getFollowingsPostByUserId,
     createPost,
     updatePost,
     dislikePost,

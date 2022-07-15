@@ -26,6 +26,7 @@ const getUserById = async (req, res, next) => {
     } catch (error) {
         return next(new HttpError('Oops something went wrong'), 500)
     };
+    console.log(user);
     if (!user) {
         return next(new HttpError('User not exist'), 404);
     };
