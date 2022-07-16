@@ -8,7 +8,8 @@ const getPostsByCid = async (req, res, next) => {
     const cId = req.params.cid;
     let collection;
     try {
-        collection = await Collection.findById(cId).populate('posts');
+        // collection = await Collection.findById(cId).populate('posts');
+        collection = await Collection.findById(cId).populate({ path: 'posts', model: 'Post', options: { sort: { 'date': -1 } }, populate: { path: 'creator', model: 'User' } });
     } catch (error) {
         return next(new HttpError('Oops something is wrong.', 500));
     }
