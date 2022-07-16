@@ -12,7 +12,7 @@ const getAppointmentsByUserId = async (req, res, next) => {
         // user = await User.findById(userId).populate({ path: 'appointments', model: 'Appointment', populate: [{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }] });
 
         user = await User.findById(userId).populate(
-            { path: 'appointments', model: 'Appointment', populate: [{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }, { path: 'reviews', model: 'Review', populate: { path: 'creator', model: 'User' } }] });
+            { path: 'appointments', model: 'Appointment',options: { sort: { 'date': -1 } }, populate: [{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }, { path: 'reviews', model: 'Review', populate: { path: 'creator', model: 'User' } }] });
 
         // appointments = await Appointment.find({ creator: userId }).populate('reviews reciever');
         // user = await User.findById(userId).populate('appointments reviews');
@@ -44,7 +44,7 @@ const getInvitationsByUserId = async (req, res, next) => {
     let userId = req.params.uid;
     let user;
     try {
-        user = await User.findById(userId).populate({ path: 'invitations', model: 'Appointment', populate: [{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }] });
+        user = await User.findById(userId).populate({ path: 'invitations', model: 'Appointment',options: { sort: { 'date': -1 } }, populate: [{ path: 'reciever', model: 'User' }, { path: 'creator', model: 'User' }] });
     } catch (error) {
         return next(new HttpError('Oops something went wrong.', 500));
     };

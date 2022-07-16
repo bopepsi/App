@@ -9,7 +9,7 @@ const { default: mongoose } = require('mongoose');
 const getPosts = async (req, res, next) => {
     let posts;
     try {
-        posts = await Post.find().populate('creator');
+        posts = await Post.find().populate('creator').sort({ date: -1 });
     } catch (error) {
         return next(new HttpError('Something went wrong', 500));
     };
@@ -25,7 +25,7 @@ const getPostById = async (req, res, next) => {
     console.log('This is postId in req: ', pId);
     let post;
     try {
-        post = await Post.findById(pId).populate([{ path: 'creator', model: 'User' }, { path: 'comments', model: 'Comment', populate: { path: 'creator', model: 'User' } }])
+        post = await Post.findById(pId).populate([{ path: 'creator', model: 'User' }, { path: 'comments', model: 'Comment', populate: { path: 'creator', model: 'User' } }]);
     } catch (error) {
         return next(new HttpError('Something went wrong', 500));
     };
@@ -57,7 +57,7 @@ const getFollowingsPostByUserId = async (req, res, next) => {
     const uId = req.params.uid;
     let user;
     try {
-        user = await User.findById(uId).populate([{ path: 'follows', model: 'User', populate: { path: 'posts', model: 'Post', populate: { path: 'creator', model: 'User' } } }]);
+        user = await User.findById(uId).populate([{ path: 'follows', model: 'User', populate: { path: 'posts', model: 'Post', options: { sort: { 'date': -1 } }, populate: { path: 'creator', model: 'User' } } }]);
     } catch (error) {
         return next(new HttpError('Something went wrong', 500));
     }

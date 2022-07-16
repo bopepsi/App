@@ -20,20 +20,20 @@ const getAllUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
     let userId = req.params.uid;
     let user;
+    console.log('here');
     try {
         // user = await User.findById(userId).populate('posts collections likedPosts')
-        user = await User.findById(userId).populate([{ path: 'posts', model: 'Post', populate: { path: 'creator', model: 'User' } }, { path: 'likedPosts', model: 'Post', populate: { path: 'creator', model: 'User' } }, { path: 'collections', model: 'Collection' }]);
+        user = await User.findById(userId).populate([{ path: 'posts', model: 'Post', options: { sort: { 'date': -1 } }, populate: { path: 'creator', model: 'User' } }, { path: 'likedPosts', model: 'Post', populate: { path: 'creator', model: 'User' } }, { path: 'collections', model: 'Collection' }]);
     } catch (error) {
         return next(new HttpError('Oops something went wrong'), 500)
     };
-    console.log(user);
     if (!user) {
         return next(new HttpError('User not exist'), 404);
     };
     res.status(201).json({ user: user.toObject({ getters: true }) });
     // res.status(201).json({ user: user.toObject({ getters: true }), likedPosts: user.likedPosts.map(p => p.toObject({ getters: true })), posts: user.posts.map(p => p.toObject({ getters: true })) });
 }
-
+// options: { sort: { 'date': -1 } },
 const getUserFollowings = async (req, res, next) => {
     const uId = req.params.uid;
     let user;
