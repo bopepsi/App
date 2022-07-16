@@ -74,7 +74,7 @@ const getPostsByTag = async (req, res, next) => {
     console.log(tag);
     let existingTag;
     try {
-        existingTag = await Tag.findOne({ text: tag }).populate({ path: 'posts', model: 'Post', populate: { path: 'creator', model: 'User' } });
+        existingTag = await Tag.findOne({ text: tag }).populate({ path: 'posts', model: 'Post', options: { sort: { 'date': -1 } }, populate: { path: 'creator', model: 'User' } });
     } catch (error) {
         return next(new HttpError('Something went wrong', 500));
     }
