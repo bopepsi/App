@@ -59,6 +59,12 @@ const getFollowingsPostByUserId = async (req, res, next) => {
     } catch (error) {
         return next(new HttpError('Something went wrong', 500));
     }
+    // //* userData was stored in req in check-auth middleware
+    // const authUserId = req.userData.userId;
+    // //* Change mongoDb Object id type to String, then compare
+    // if (user.id !== authUserId) {
+    //     return next(new HttpError('You are not authenticated for this action.', 401));
+    // }
     if (!user) {
         const error = new Error('Could not find user.');
         error.code = 404;
