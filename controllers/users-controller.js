@@ -20,7 +20,7 @@ const getAllUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
     let userId = req.params.uid;
     let user;
-    console.log('in here')
+    
     try {
         // user = await User.findById(userId).populate('posts collections likedPosts')
         user = await User.findById(userId).populate([{ path: 'posts', model: 'Post', options: { sort: { 'date': -1 } }, populate: { path: 'creator', model: 'User' } }, { path: 'likedPosts', model: 'Post', populate: { path: 'creator', model: 'User' } }, { path: 'collections', model: 'Collection' }]);
