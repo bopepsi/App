@@ -119,7 +119,6 @@ const acceptInvitation = async (req, res, next) => {
         return next(new HttpError('Data not exist.', 422));
     };
     //* update user info, appoint info and save
-    console.log(user, appointment)
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();

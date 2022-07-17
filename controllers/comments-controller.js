@@ -72,7 +72,6 @@ const createCommentOnPost = async (req, res, next) => {
     let postId = req.params.pid;
     let { text, creator } = req.body;
     //* create new comment instance
-    console.log(text, creator);
     const newComment = new Comment({ text, likes: 0, likedBy: [], creator, replies: [] });
     //* find creator
     let user;
@@ -90,7 +89,6 @@ const createCommentOnPost = async (req, res, next) => {
     };
     post.creator.unreadNotifications = post.creator.unreadNotifications + 1;
     post.creator.unreadComments.push(newComment);
-    console.log(post.creator);
     //* save new comment, update post comments and user comments arr and increase post owner's unreadNotification by one
     try {
         const sess = await mongoose.startSession();
@@ -163,8 +161,6 @@ const likeAComment = async (req, res, next) => {
     comment.likes = comment.likes + 1;
     comment.likedBy.push(userId);
 
-    console.log(comment)
-
     try {
         await comment.save();
     } catch (error) {
@@ -191,8 +187,6 @@ const unLikeAComment = async (req, res, next) => {
     //* update likes and liked by
     comment.likes = comment.likes - 1;
     comment.likedBy.pull(userId);
-
-    console.log(comment)
 
     try {
         await comment.save();

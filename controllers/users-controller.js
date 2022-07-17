@@ -20,7 +20,6 @@ const getAllUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
     let userId = req.params.uid;
     let user;
-    console.log('here');
     try {
         // user = await User.findById(userId).populate('posts collections likedPosts')
         user = await User.findById(userId).populate([{ path: 'posts', model: 'Post', options: { sort: { 'date': -1 } }, populate: { path: 'creator', model: 'User' } }, { path: 'likedPosts', model: 'Post', populate: { path: 'creator', model: 'User' } }, { path: 'collections', model: 'Collection' }]);
@@ -65,7 +64,6 @@ const getUserFollowers = async (req, res, next) => {
 const signup = async (req, res, next) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        console.log(errors);
         return next(new HttpError('Please check your inputs', 422));
     }
 
@@ -124,7 +122,6 @@ const signup = async (req, res, next) => {
     try {
         await newUser.save();
     } catch (error) {
-        console.log(error)
         return next(new HttpError('Oops, something went wrong when creating user', 500));
     };
 
@@ -273,7 +270,6 @@ const followUser = async (req, res, next) => {
         return next(new HttpError('Could not find creator user.', 422));
     }
     //* Update followings and followers then save
-    console.log(user, thisUser);
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
@@ -283,9 +279,6 @@ const followUser = async (req, res, next) => {
         await user.save({ session: sess });
         await sess.commitTransaction();
     } catch (error) {
-        console.log(error.message);
-        console.log('ok');
-
         return next(new HttpError('Oops, follow user failed.', 500));
     };
 
@@ -325,8 +318,6 @@ const unFollowUser = async (req, res, next) => {
         await user.save({ session: sess });
         await sess.commitTransaction();
     } catch (error) {
-        console.log(error.message);
-        console.log('ok');
         return next(new HttpError('Oops, follow user failed.', 500));
     };
 
@@ -354,7 +345,6 @@ const changeBackgroundImage = async (req, res, next) => {
     try {
         await existingUser.save();
     } catch (error) {
-        console.log(error)
         return next(new HttpError('Oops, something went wrong when saving image', 500));
     };
 
@@ -378,12 +368,10 @@ const changeUserImage = async (req, res, next) => {
     };
 
     existingUser.image = image;
-    console.log(existingUser);
 
     try {
         await existingUser.save();
     } catch (error) {
-        console.log(error)
         return next(new HttpError('Oops, something went wrong when saving image', 500));
     };
 

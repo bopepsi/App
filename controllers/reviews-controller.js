@@ -6,7 +6,6 @@ const { default: mongoose } = require('mongoose');
 
 const createReview = async (req, res, next) => {
     let { reciever, creator, appointment, text, rating } = req.body;
-    console.log(req.body);
     if (!reciever || !creator || !appointment || !rating) {
         return next(new HttpError('Invalid inputs', 500));
     }

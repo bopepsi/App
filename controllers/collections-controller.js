@@ -97,7 +97,6 @@ const createCollection = async (req, res, next) => {
 
 const addPostToCollection = async (req, res, next) => {
     const { cid, pid } = req.params;
-    console.log(cid, pid);
     //* get collection
     let collection;
     try {
@@ -120,7 +119,6 @@ const addPostToCollection = async (req, res, next) => {
     }
     //* add post ObjectId to collection's posts arr and increase post collections by one
     post.collections = Number(post.collections) + 1;
-    console.log(post.collections);
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
@@ -137,7 +135,6 @@ const addPostToCollection = async (req, res, next) => {
 
 const removePostFromCollection = async (req, res, next) => {
     const { cid, pid } = req.params;
-    console.log(cid, pid);
     //* get collection
     let collection;
     try {
@@ -160,7 +157,6 @@ const removePostFromCollection = async (req, res, next) => {
     }
     //* remove post ObjectId from collection's posts arr and decrease post collections by one
     post.collections = Number(post.collections) - 1;
-    console.log(post.collections);
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();
@@ -209,7 +205,6 @@ const deleteCollection = async (req, res, next) => {
     if (!collection) {
         return next(new HttpError('Could not find collection.', 404));
     };
-    console.log(collection);
     try {
         const sess = await mongoose.startSession();
         sess.startTransaction();

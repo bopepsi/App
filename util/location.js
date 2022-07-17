@@ -13,7 +13,6 @@ async function getCoordsForAddress(address) {
         };
         const formalAddress = data.results[0]['formatted_address'];
         const coordinates = data.results[0].geometry.location;
-        console.log(formalAddress);
         return { coordinates, formalAddress };
     } catch (error) {
         throw error;
@@ -30,7 +29,6 @@ async function getAddressForCoords(lat, lng) {
         };
         const formalAddress = data.results['address_components'];
         const coordinates = data.results[0].geometry.location;
-        console.log(formalAddress);
         return { formalAddress, coordinates };
     } catch (error) {
         throw error;
