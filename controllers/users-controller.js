@@ -186,6 +186,13 @@ const editUserProfile = async (req, res, next) => {
         return next(new HttpError('Could not find user.', 404));
     };
 
+    //* userData was stored in req in check-auth middleware
+    const { userId } = req.userData;
+    //* Change mongoDb Object id type to String, then compare
+    if (user.id !== userId) {
+        return next(new HttpError('You are not authenticated for this action.', 401));
+    }
+
     let coordinates;
     let formalAddress;
     try {
@@ -259,6 +266,15 @@ const followUser = async (req, res, next) => {
     if (!thisUser) {
         return next(new HttpError('Could not find creator user.', 422));
     }
+
+    //* userData was stored in req in check-auth middleware
+    const authUserId = req.userData.userId;
+    //* Change mongoDb Object id type to String, then compare
+    if (thisUser.id !== authUserId) {
+        return next(new HttpError('You are not authenticated for this action.', 401));
+    }
+
+
     //* find to be followed user info
     let user;
     try {
@@ -298,6 +314,14 @@ const unFollowUser = async (req, res, next) => {
     if (!thisUser) {
         return next(new HttpError('Could not find creator user.', 422));
     }
+
+    //* userData was stored in req in check-auth middleware
+    const authUserId = req.userData.userId;
+    //* Change mongoDb Object id type to String, then compare
+    if (thisUser.id !== authUserId) {
+        return next(new HttpError('You are not authenticated for this action.', 401));
+    }
+
     //* find to be followed user info
     let user;
     try {
@@ -340,6 +364,13 @@ const changeBackgroundImage = async (req, res, next) => {
         return next(new HttpError('User not exists.', 422));
     };
 
+    //* userData was stored in req in check-auth middleware
+    const authUserId = req.userData.userId;
+    //* Change mongoDb Object id type to String, then compare
+    if (existingUser.id !== authUserId) {
+        return next(new HttpError('You are not authenticated for this action.', 401));
+    }
+
     existingUser.backgroundImage = image;
 
     try {
@@ -366,6 +397,13 @@ const changeUserImage = async (req, res, next) => {
     if (!existingUser) {
         return next(new HttpError('User not exists.', 422));
     };
+
+    //* userData was stored in req in check-auth middleware
+    const authUserId = req.userData.userId;
+    //* Change mongoDb Object id type to String, then compare
+    if (existingUser.id !== authUserId) {
+        return next(new HttpError('You are not authenticated for this action.', 401));
+    }
 
     existingUser.image = image;
 
