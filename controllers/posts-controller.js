@@ -96,7 +96,12 @@ const createPost = async (req, res, next) => {
     }
     let { title, description, tags, address, creator } = req.body;
 
-    let image = process.env.SERVER_URL + req.file.path;
+    // let image = process.env.SERVER_URL + req.file.path;
+    // console.log('creating post')
+    // console.log(req.file.path);
+    // console.log(req.file);
+
+    console.log(req.file);
 
     const likes = 0, dislikes = 0, collections = 0, comments = [];
 
@@ -111,7 +116,7 @@ const createPost = async (req, res, next) => {
     } catch (error) {
         return next(error);
     }
-    const createdPost = new Post({ title, description, tags, image, likes, dislikes, collections, address: formalAddress, location: coordinates, comments, creator });
+    const createdPost = new Post({ title, description, tags, image: req.file.location, likes, dislikes, collections, address: formalAddress, location: coordinates, comments, creator });
 
     let user;
     try {
