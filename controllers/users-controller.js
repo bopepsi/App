@@ -20,7 +20,7 @@ const getAllUsers = async (req, res, next) => {
 const getUserById = async (req, res, next) => {
     let userId = req.params.uid;
     let user;
-    
+
     try {
         // user = await User.findById(userId).populate('posts collections likedPosts')
         user = await User.findById(userId).populate([{ path: 'posts', model: 'Post', options: { sort: { 'date': -1 } }, populate: { path: 'creator', model: 'User' } }, { path: 'likedPosts', model: 'Post', populate: { path: 'creator', model: 'User' } }, { path: 'collections', model: 'Collection' }]);
@@ -70,7 +70,8 @@ const signup = async (req, res, next) => {
 
     const { name, email, password, age, address } = req.body;
 
-    let image = process.env.SERVER_URL + req.file.path;
+    // let image = process.env.SERVER_URL + req.file.path;
+    const image = req.file.location;
 
     let bio = 'No bio yet';
     let gender = 'Unknown';
@@ -351,7 +352,8 @@ const unFollowUser = async (req, res, next) => {
 
 const changeBackgroundImage = async (req, res, next) => {
 
-    let image = process.env.SERVER_URL + req.file.path;
+    // let image = process.env.SERVER_URL + req.file.path;
+    const image = req.file.location;
     const uId = req.params.uid;
 
     let existingUser;
@@ -385,7 +387,8 @@ const changeBackgroundImage = async (req, res, next) => {
 
 const changeUserImage = async (req, res, next) => {
 
-    let image = process.env.SERVER_URL + req.file.path;
+    // let image = process.env.SERVER_URL + req.file.path;
+    const image = req.file.location;
     const uId = req.params.uid;
 
     let existingUser;
