@@ -79,6 +79,7 @@ const signup = async (req, res, next) => {
     let athleteTypes = [];
     let likes = 0;
     let backgroundImage = `${process.env.SERVER_URL}uploads/default/background.jpg`;
+    let interests = [];
     let appointments = [];
     let invitations = [];
     let reviews = [];
@@ -119,7 +120,7 @@ const signup = async (req, res, next) => {
         return next(new HttpError('User already exists, login instead.', 422));
     };
 
-    const newUser = new User({ name, email, password: hashedPassword, age, bio, gender, gymMembership, athleteTypes, image, likes, backgroundImage, address: formalAddress, location: coordinates, appointments, invitations, reviews, likedPosts, posts, collections, follows, followers, comments, unreadNotifications, unreadComments });
+    const newUser = new User({ name, email, password: hashedPassword, age, bio, gender, gymMembership, athleteTypes, image, likes, backgroundImage, address: formalAddress, location: coordinates, interests, appointments, invitations, reviews, likedPosts, posts, collections, follows, followers, comments, unreadNotifications, unreadComments });
 
     try {
         await newUser.save();

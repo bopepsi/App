@@ -21,17 +21,53 @@ const getPosts = async (req, res, next) => {
 };
 
 const getPostById = async (req, res, next) => {
+
+    const uId = req.params.uid;
     const pId = req.params.pid;
+    let user;
+    try {
+        user = await User.findById(uId).populate('interests');
+    } catch (error) {
+        return next(new HttpError('Something went wrong finding user', 500));
+    }
+    if (!user) {
+        const error = new HttpError('Could not find the user.', 404);
+        return next(error);
+    };
+
     let post;
     try {
         post = await Post.findById(pId).populate([{ path: 'creator', model: 'User' }, { path: 'comments', model: 'Comment', populate: { path: 'creator', model: 'User' } }]);
     } catch (error) {
-        return next(new HttpError('Something went wrong', 500));
+        return next(new HttpError('Something went wrong finding post', 500));
     };
     if (!post) {
         const error = new HttpError('Could not find the post.', 404);
         return next(error);
     };
+
+    if (post.tags && post.tags.length > 0) {
+
+        for (let tag of post.tags) {
+            let existingTag;
+            try {
+                existingTag = await Tag.findOne({ text: tag });
+            } catch (error) {
+                return next(new HttpError('Something went wrong', 500));
+            }
+            let tagExist = user.interests.some(t => t.id === existingTag.id);
+            if (!tagExist) {
+                user.interests.push(existingTag.id);
+            }
+        };
+    }
+
+    try {
+        await user.save();
+    } catch (error) {
+        return next(new HttpError('Saving user failed.', 500));
+    }
+
     res.json({ post: post.toObject({ getters: true }) });
 };
 
@@ -88,6 +124,28 @@ const getPostsByTag = async (req, res, next) => {
 }
 
 const getNearbyPosts = async (req, res, next) => { }
+
+const getRecByUser = async (req, res, next) => {
+    const uId = req.params.uid;
+    let user;
+    try {
+        user = await User.findById(uId).populate([{ path: 'interests', model: 'Tag', populate: { path: 'posts', model: 'Post', options: { sort: { 'date': -1 } }, populate: { path: 'creator', model: 'User' } } }]);
+    } catch (error) {
+        return next(new HttpError('Something went wrong', 500));
+    }
+    // //* userData was stored in req in check-auth middleware
+    // const authUserId = req.userData.userId;
+    // //* Change mongoDb Object id type to String, then compare
+    // if (user.id !== authUserId) {
+    //     return next(new HttpError('You are not authenticated for this action.', 401));
+    // }
+    if (!user) {
+        const error = new Error('Could not find user.');
+        error.code = 404;
+        return next(error);
+    }
+    res.json({ user: user.toObject({ getters: true }) });
+}
 
 const createPost = async (req, res, next) => {
     const errors = validationResult(req);
@@ -369,5 +427,6 @@ module.exports = {
     addComment,
     deletePost,
     addPostToLikes,
-    removePostFromLikes
+    removePostFromLikes,
+    getRecByUser
 }

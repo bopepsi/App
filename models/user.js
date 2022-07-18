@@ -19,6 +19,7 @@ const userSchema = new Schema({
         lat: { type: Number, required: true },
         lng: { type: Number, required: true }
     },
+    interests: [{ type: mongoose.Types.ObjectId, required: true, ref: "Tag" }],
     // Creator create an appoinment
     appointments: [{ type: mongoose.Types.ObjectId, required: true, ref: "Appointment" }],
     // User recieve an appoinment, pending

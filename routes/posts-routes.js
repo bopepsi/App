@@ -5,17 +5,19 @@ const checkAuth = require('../middleware/check-auth');
 const upload = require('../services/aws-upload');
 const singleUpload = upload.single('image');
 
-const { getPostById, getPostsByUserId, createPost, updatePost, deletePost, likeOrDislkePost, addOrRemovePostFromCollection, addComment, addPostToLikes, removePostFromLikes, dislikePost, getPosts, getFollowingsPostByUserId, getPostsByTag, getNearbyPosts } = require('../controllers/posts-controller');
+const { getPostById, getPostsByUserId, createPost, updatePost, deletePost, likeOrDislkePost, addOrRemovePostFromCollection, addComment, addPostToLikes, removePostFromLikes, dislikePost, getPosts, getFollowingsPostByUserId, getPostsByTag, getNearbyPosts, getRecByUser } = require('../controllers/posts-controller');
 
 const router = express.Router();
 
 router.get('/', getPosts)
-
-router.get('/:pid', getPostById);
+//!
+router.get('/post/:uid/:pid', getPostById);
 
 router.get('/user/:uid', getPostsByUserId);
 
-router.get('/followings/:uid', getFollowingsPostByUserId)
+router.get('/followings/:uid', getFollowingsPostByUserId);
+
+router.get('/rec/:uid', getRecByUser);
 
 router.get('/tags/:tag', getPostsByTag);
 
