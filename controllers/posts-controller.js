@@ -24,16 +24,19 @@ const getPostById = async (req, res, next) => {
 
     const uId = req.params.uid;
     const pId = req.params.pid;
+    console.log(uId,pId);
     let user;
-    try {
-        user = await User.findById(uId).populate('interests');
-    } catch (error) {
-        return next(new HttpError('Something went wrong finding user', 500));
+    if (uId !== 'NA') {
+        try {
+            user = await User.findById(uId).populate('interests');
+        } catch (error) {
+            return next(new HttpError('Something went wrong finding user', 500));
+        }
+        if (!user) {
+            const error = new HttpError('Could not find the user.', 404);
+            return next(error);
+        };
     }
-    if (!user) {
-        const error = new HttpError('Could not find the user.', 404);
-        return next(error);
-    };
 
     let post;
     try {
@@ -46,26 +49,29 @@ const getPostById = async (req, res, next) => {
         return next(error);
     };
 
-    if (post.tags && post.tags.length > 0) {
+    if (uId !== 'NA') {
+        if (post.tags && post.tags.length > 0) {
 
-        for (let tag of post.tags) {
-            let existingTag;
-            try {
-                existingTag = await Tag.findOne({ text: tag });
-            } catch (error) {
-                return next(new HttpError('Something went wrong', 500));
-            }
-            let tagExist = user.interests.some(t => t.id === existingTag.id);
-            if (!tagExist) {
-                user.interests.push(existingTag.id);
-            }
-        };
-    }
+            for (let tag of post.tags) {
+                let existingTag;
+                try {
+                    existingTag = await Tag.findOne({ text: tag });
+                } catch (error) {
+                    return next(new HttpError('Something went wrong', 500));
+                }
+                let tagExist = user.interests.some(t => t.id === existingTag.id);
+                if (!tagExist) {
+                    user.interests.push(existingTag.id);
+                }
+            };
+        }
 
-    try {
-        await user.save();
-    } catch (error) {
-        return next(new HttpError('Saving user failed.', 500));
+        try {
+            await user.save();
+        } catch (error) {
+            return next(new HttpError('Saving user failed.', 500));
+        }
+
     }
 
     res.json({ post: post.toObject({ getters: true }) });
